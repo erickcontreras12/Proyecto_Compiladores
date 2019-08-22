@@ -69,6 +69,11 @@ public class minisql extends javax.swing.JFrame {
         jScrollPane2.setViewportView(jTextArea1);
 
         jBtnAnalyze.setText("Realizar analisis");
+        jBtnAnalyze.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jBtnAnalyzeActionPerformed(evt);
+            }
+        });
 
         jLabel2.setText("Analisis de tokens:");
 
@@ -148,6 +153,10 @@ public class minisql extends javax.swing.JFrame {
             }
         }
     }//GEN-LAST:event_jBtnSearchFileActionPerformed
+
+    private void jBtnAnalyzeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnAnalyzeActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jBtnAnalyzeActionPerformed
 
     public void startLexer(){
         String absolutePath = new File(".").getAbsolutePath();
