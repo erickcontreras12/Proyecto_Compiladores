@@ -3,14 +3,19 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package Graphic;
+package Classes;
 
 import Classes.*;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.Reader;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 /**
@@ -18,10 +23,11 @@ import javax.swing.filechooser.FileNameExtensionFilter;
  * @author eecon
  */
 public class minisql extends javax.swing.JFrame {
+
     String root;
     File file;
     FileManager manager = new FileManager();
-    
+
     /**
      * Creates new form minisql
      */
@@ -141,7 +147,7 @@ public class minisql extends javax.swing.JFrame {
         if (value == JFileChooser.APPROVE_OPTION) {
             file = file_chooser.getSelectedFile();
             root = file.getPath();
-            
+
             String text = "";
             try {
                 text = manager.readFile(root);
@@ -155,17 +161,87 @@ public class minisql extends javax.swing.JFrame {
     }//GEN-LAST:event_jBtnSearchFileActionPerformed
 
     private void jBtnAnalyzeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnAnalyzeActionPerformed
-        // TODO add your handling code here:
+        try {
+            // TODO add your handling code here:
+            validateTokens();
+            //Write out file
+            String file_name = file.getName();
+            String aux_root = root.substring(0, root.length() - file_name.length());
+            file_name = file_name.substring(0, file_name.length() - 4);
+            manager.writeFile(file_name, jTextArea1.getText(), root, aux_root, "out");
+            JOptionPane.showMessageDialog(null, "El archivo " + file_name + "." + "out" + " se creo en el mismo directorio\nque el original");
+
+        } catch (IOException ex) {
+            Logger.getLogger(minisql.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }//GEN-LAST:event_jBtnAnalyzeActionPerformed
 
-    public void startLexer(){
+    public void startLexer() {
         String absolutePath = new File(".").getAbsolutePath();
         absolutePath = absolutePath.substring(0, absolutePath.length() - 1);
         absolutePath += "src\\Classes\\Lexer.flex";
         File lexerFile = new File(absolutePath);
         jflex.Main.generate(lexerFile);
     }
-    
+
+    public void validateTokens() throws FileNotFoundException, IOException {
+        Reader reader = new BufferedReader(new FileReader(file));
+
+        Lexer lexer = new Lexer(reader);
+        String resultado = "";
+        while (true) {
+            Token token = lexer.yylex();
+            if (token == null) {
+                jTextArea1.setText(resultado);
+                break;
+            }
+            switch (token) {
+                case ERROR:
+                    resultado += "Error caracter invalido, " + lexer.lexeme + "  Line: " + lexer.getLine() + "\n"
+                            + "   PrimeraColumna: " + lexer.getColumn() + "   UltimaColumna: " + lexer.getColumn() + lexer.lexeme.length() + "\n";
+                    break;
+                case ID:
+                    String string = "";
+                    if (lexer.lexeme.length() > 31) {
+                        string = lexer.lexeme.substring(0, 31);
+                        resultado += "Error de truncado, " + token + " " + string + "  Line: " + lexer.getLine() + "\n"
+                                + "   FirstCol: " + lexer.getColumn() + "   LastCol: " + (lexer.getColumn() + lexer.lexeme.length()) + "\n";
+                    } else {
+                        resultado += "TOKEN: " + token + " " + lexer.lexeme + "  Line: " + lexer.getLine() + "\n"
+                                + "   FirstCol: " + lexer.getColumn() + "   LastCol: " + (lexer.getColumn() + lexer.lexeme.length()) + "\n";
+                    }
+                    break;
+                case PALABRA_RESERVADA:
+                case INT:
+                case FLOAT:
+                case STRING:
+                    resultado += "TOKEN: " + token + " " + lexer.lexeme + "  Line: " + lexer.getLine() + "\n"
+                            + "   FirstCol: " + lexer.getColumn() + "   LastCol: " + (lexer.getColumn() + lexer.lexeme.length()) + "\n";
+                    break;
+                case COMENTARIO_M:
+                    if (!lexer.lexeme.endsWith("*/")) {
+                        resultado += "Error, comentario multilinea " + token + "  Line: " + lexer.getLine() + "\n"
+                                + "   FirstCol: " + lexer.getColumn() + "   LastCol: " + (lexer.getColumn() + lexer.lexeme.length()) + "\n";
+                        int firstNewLinePosition = 0;
+                        for (int i = 0; i < lexer.lexeme.length(); i++) {
+                            if (lexer.lexeme.charAt(i) == '\n') {
+                                firstNewLinePosition = i;
+                                break;
+                            }
+                        }
+                        
+                        lexer.yypushback(lexer.lexeme.length() - firstNewLinePosition);
+                    }
+                    break;
+                default:
+                    resultado += "TOKEN: " + token + "  Line: " + lexer.getLine() + "\n"
+                            + "   FirstCol: " + lexer.getColumn() + "   LastCol: " + (lexer.getColumn() + lexer.lexeme.length()) + "\n";
+                    break;
+            }
+
+        }
+    }
+
     /**
      * @param args the command line arguments
      */
