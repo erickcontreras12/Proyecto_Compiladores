@@ -8,6 +8,10 @@ cual se obtiene el contenido y se muestra en un área de texto para que sea visi
 "Analizar" él cúal arranca el procedimiento que evalua el contenido del archivo seleccionado y determina que Tokens pertenecen al lenguaje 
 y a que tipo se refieren. De igual manera devuelve el número de linea, el número de la primera y última columna en la que está el token.
 
+Al terminar el análisis, el programa devuelve mensaje indicando al usuario que se escribió un archivo con el mismo nombre del seleccionado
+y una extensión *.out* en el mismo directorio del original. Y de la misma manera se muestra el resultado en un pequeño cuadro de texto para
+que el usuario pueda verificar desde el mismo programa.
+
 Los errores que valida el programa son:
 - Errores de longitud en identificadores: los identificadores en Mini-SQL permiten una longitud máxima de 31 caracteres por lo que con 
 identificadores que superan esa cantidad, el analizador realiza un truncado desechando los caracteres extras y mostrando los 31 que si son 
