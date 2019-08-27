@@ -64,12 +64,14 @@ public class minisql extends javax.swing.JFrame {
             }
         });
 
+        jTxtAFileContent.setEditable(false);
         jTxtAFileContent.setColumns(20);
         jTxtAFileContent.setRows(5);
         jScrollPane1.setViewportView(jTxtAFileContent);
 
         jLabel1.setText("Contenido de archivo:");
 
+        jTextArea1.setEditable(false);
         jTextArea1.setColumns(20);
         jTextArea1.setRows(5);
         jScrollPane2.setViewportView(jTextArea1);
@@ -93,46 +95,51 @@ public class minisql extends javax.swing.JFrame {
                 .addGap(23, 23, 23)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 260, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(37, 37, 37)
-                        .addComponent(jLabel3))
-                    .addGroup(layout.createSequentialGroup()
                         .addGap(74, 74, 74)
                         .addComponent(jBtnSearchFile))
-                    .addComponent(jLabel1))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 39, Short.MAX_VALUE)
+                    .addComponent(jLabel1)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 360, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(26, 26, 26)
+                        .addComponent(jLabel3)))
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                    .addGroup(layout.createSequentialGroup()
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 260, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel2))
-                        .addGap(25, 25, 25))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(0, 0, Short.MAX_VALUE)
+                                .addComponent(jLabel2)
+                                .addGap(356, 356, 356))
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 360, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(0, 0, Short.MAX_VALUE))))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(jBtnAnalyze)
-                        .addGap(84, 84, 84))))
+                        .addGap(220, 220, 220))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jBtnSearchFile)
-                    .addComponent(jBtnAnalyze))
-                .addGap(6, 6, 6)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel1)
-                    .addComponent(jLabel2))
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 280, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(1, 1, 1)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jBtnSearchFile)
+                            .addComponent(jBtnAnalyze))
+                        .addGap(6, 6, 6)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel1)
+                            .addComponent(jLabel2))
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 280, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 280, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addContainerGap(20, Short.MAX_VALUE))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(jLabel3)
-                        .addGap(128, 128, 128))))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(1, 1, 1)
+                                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 280, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(113, 113, 113)
+                                .addComponent(jLabel3)))))
+                .addContainerGap(31, Short.MAX_VALUE))
         );
 
         pack();
@@ -142,7 +149,9 @@ public class minisql extends javax.swing.JFrame {
         // TODO add your handling code here:
         JFileChooser file_chooser = new JFileChooser();
         FileNameExtensionFilter filter = new FileNameExtensionFilter("Archivo de Texto", "txt");
-        file_chooser.setFileFilter(filter);
+        FileNameExtensionFilter filter2 = new FileNameExtensionFilter("Archivo SQL", "sql");
+        file_chooser.addChoosableFileFilter(filter);
+        file_chooser.addChoosableFileFilter(filter2);
         int value = file_chooser.showOpenDialog(this);
         if (value == JFileChooser.APPROVE_OPTION) {
             file = file_chooser.getSelectedFile();
@@ -161,18 +170,21 @@ public class minisql extends javax.swing.JFrame {
     }//GEN-LAST:event_jBtnSearchFileActionPerformed
 
     private void jBtnAnalyzeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnAnalyzeActionPerformed
-        try {
-            // TODO add your handling code here:
-            validateTokens();
-            //Write out file
-            String file_name = file.getName();
-            String aux_root = root.substring(0, root.length() - file_name.length());
-            file_name = file_name.substring(0, file_name.length() - 4);
-            manager.writeFile(file_name, jTextArea1.getText(), root, aux_root, "out");
-            JOptionPane.showMessageDialog(null, "El archivo " + file_name + "." + "out" + " se creo en el mismo directorio\nque el original");
+       if (jTxtAFileContent.getText().isEmpty()) {
+            JOptionPane.showMessageDialog(null, "Seleccione un archivo primero");
+        } else {
 
-        } catch (IOException ex) {
-            Logger.getLogger(minisql.class.getName()).log(Level.SEVERE, null, ex);
+            try {
+                // TODO add your handling code here:
+                validateTokens();
+                String file_name = file.getName();
+                String aux_root = root.substring(0, root.length() - file_name.length());
+                file_name = file_name.substring(0, file_name.length() - 4);
+                manager.writeFile(file_name, jTextArea1.getText(), root, aux_root, "out");
+                JOptionPane.showMessageDialog(null, "El archivo " + file_name + " .out se escribió en\nla ubicación del archivo original");
+            } catch (IOException ex) {
+                Logger.getLogger(minisql.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
     }//GEN-LAST:event_jBtnAnalyzeActionPerformed
 
