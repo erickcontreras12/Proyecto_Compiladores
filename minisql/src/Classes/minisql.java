@@ -209,17 +209,17 @@ public class minisql extends javax.swing.JFrame {
             }
             switch (token) {
                 case ERROR:
-                    resultado += "Error caracter invalido, " + lexer.lexeme + "  Line: " + lexer.getLine() + "\n"
+                    resultado += "Error caracter invalido, " + lexer.lexeme + "  Line: " + lexer.getLine() + ""
                             + "   PrimeraColumna: " + lexer.getColumn() + "   UltimaColumna: " + lexer.getColumn() + lexer.lexeme.length() + "\n";
                     break;
                 case ID:
                     String string = "";
                     if (lexer.lexeme.length() > 31) {
                         string = lexer.lexeme.substring(0, 31);
-                        resultado += "Error de truncado, " + token + " " + string + "  Line: " + lexer.getLine() + "\n"
+                        resultado += "Error de truncado, " + token + " " + string + "  Line: " + lexer.getLine() + ""
                                 + "   FirstCol: " + lexer.getColumn() + "   LastCol: " + (lexer.getColumn() + lexer.lexeme.length()) + "\n";
                     } else {
-                        resultado += "TOKEN: " + token + " " + lexer.lexeme + "  Line: " + lexer.getLine() + "\n"
+                        resultado += "TOKEN: " + token + " " + lexer.lexeme + "  Line: " + lexer.getLine() + ""
                                 + "   FirstCol: " + lexer.getColumn() + "   LastCol: " + (lexer.getColumn() + lexer.lexeme.length()) + "\n";
                     }
                     break;
@@ -227,12 +227,12 @@ public class minisql extends javax.swing.JFrame {
                 case INT:
                 case FLOAT:
                 case STRING:
-                    resultado += "TOKEN: " + token + " " + lexer.lexeme + "  Line: " + lexer.getLine() + "\n"
+                    resultado += "TOKEN: " + token + " " + lexer.lexeme + "  Line: " + lexer.getLine() + ""
                             + "   FirstCol: " + lexer.getColumn() + "   LastCol: " + (lexer.getColumn() + lexer.lexeme.length()) + "\n";
                     break;
                 case COMENTARIO_M:
                     if (!lexer.lexeme.endsWith("*/")) {
-                        resultado += "Error, comentario multilinea " + token + "  Line: " + lexer.getLine() + "\n"
+                        resultado += "Error, comentario multilinea " + token + "  Line: " + lexer.getLine() + ""
                                 + "   FirstCol: " + lexer.getColumn() + "   LastCol: " + (lexer.getColumn() + lexer.lexeme.length()) + "\n";
                         int firstNewLinePosition = 0;
                         for (int i = 0; i < lexer.lexeme.length(); i++) {
@@ -242,11 +242,14 @@ public class minisql extends javax.swing.JFrame {
                             }
                         }
                         
-                        lexer.yypushback(lexer.lexeme.length() - firstNewLinePosition);
+                        if (firstNewLinePosition != 0) {
+                            lexer.yypushback(lexer.lexeme.length() - firstNewLinePosition);
+                        }
+                        
                     }
                     break;
                 default:
-                    resultado += "TOKEN: " + token + "  Line: " + lexer.getLine() + "\n"
+                    resultado += "TOKEN: " + token + "  Line: " + lexer.getLine() + ""
                             + "   FirstCol: " + lexer.getColumn() + "   LastCol: " + (lexer.getColumn() + lexer.lexeme.length()) + "\n";
                     break;
             }
