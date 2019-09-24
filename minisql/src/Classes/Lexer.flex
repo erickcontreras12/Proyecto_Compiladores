@@ -16,9 +16,10 @@ public int getColumn() { return yycolumn; }
 %%
 {BLANK} {/*Ignore*/}
 "\-\-" [^\n]*  {/*Ignore*/}
-"\/\*" ([^*/]*|{BLANK})* "\*\/"? {lexeme=yytext(); return COMENTARIO_M;}
+"/*"~("*/") | "/*" (""+ "*/") {/*Ignore*/}
+"/*"[^*\/]* {lexeme=yytext(); return COMENTARIO_M;}
 ("0"|"1"|"NULL") {lexeme=yytext(); return BIT;}
-"."{D}+(("E"|"e"|"E+"|"E-"|"e+"|"e-"){D}+)?  {lexeme=yytext(); return ERROR;}
+"."{D}+(("E"|"e"|"E+"|"E-"|"e+"|"e-"){D}+)?  {lexeme=yytext(); return ERROR_F;}
 {D}+"."{D}*(("E"|"e"|"E+"|"E-"|"e+"|"e-"){D}+)? {lexeme=yytext(); return FLOAT;}
 ("+"|"-")?{D}+ {lexeme=yytext(); return INT;}
 "\'"[^\'\n]*"\'"|"\'\'" {lexeme=yytext(); return STRING;}

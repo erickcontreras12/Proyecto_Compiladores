@@ -165,26 +165,21 @@ public class minisql extends javax.swing.JFrame {
             }
             if (!text.isEmpty()) {
                 jTxtAFileContent.setText(text);
+                try {
+                    lexicalAnalyzer();
+                } catch (IOException ex) {
+                    Logger.getLogger(minisql.class.getName()).log(Level.SEVERE, null, ex);
+                }
             }
+
         }
     }//GEN-LAST:event_jBtnSearchFileActionPerformed
 
     private void jBtnAnalyzeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnAnalyzeActionPerformed
-       if (jTxtAFileContent.getText().isEmpty()) {
+        if (jTxtAFileContent.getText().isEmpty()) {
             JOptionPane.showMessageDialog(null, "Seleccione un archivo primero");
         } else {
 
-            try {
-                // TODO add your handling code here:
-                validateTokens();
-                String file_name = file.getName();
-                String aux_root = root.substring(0, root.length() - file_name.length());
-                file_name = file_name.substring(0, file_name.length() - 4);
-                manager.writeFile(file_name, jTextArea1.getText(), root, aux_root, "out");
-                JOptionPane.showMessageDialog(null, "El archivo " + file_name + " .out se escribió en\nla ubicación del archivo original");
-            } catch (IOException ex) {
-                Logger.getLogger(minisql.class.getName()).log(Level.SEVERE, null, ex);
-            }
         }
     }//GEN-LAST:event_jBtnAnalyzeActionPerformed
 
@@ -194,6 +189,15 @@ public class minisql extends javax.swing.JFrame {
         absolutePath += "src\\Classes\\Lexer.flex";
         File lexerFile = new File(absolutePath);
         jflex.Main.generate(lexerFile);
+    }
+
+    public void lexicalAnalyzer() throws IOException {
+        validateTokens();
+        String file_name = file.getName();
+        String aux_root = root.substring(0, root.length() - file_name.length());
+        file_name = file_name.substring(0, file_name.length() - 4);
+        manager.writeFile(file_name, jTextArea1.getText(), root, aux_root, "out");
+        JOptionPane.showMessageDialog(null, "El archivo " + file_name + " .out se escribió en\nla ubicación del archivo original");
     }
 
     public void validateTokens() throws FileNotFoundException, IOException {
@@ -209,45 +213,36 @@ public class minisql extends javax.swing.JFrame {
             }
             switch (token) {
                 case ERROR:
-                    resultado += "Error caracter invalido, " + lexer.lexeme + "  Line: " + lexer.getLine() + "\n"
-                            + "   PrimeraColumna: " + lexer.getColumn() + "   UltimaColumna: " + lexer.getColumn() + lexer.lexeme.length() + "\n";
+                    resultado += "Error caracter invalido, " + lexer.lexeme + "  Line: " + (lexer.getLine() + 1) + "   PrimeraColumna: " + lexer.getColumn() + "   UltimaColumna: " + (lexer.getColumn() + lexer.lexeme.length()) + "\n";
+                    break;
+                case ERROR_F:
+                    resultado += "Error float invalido, " + lexer.lexeme + "  Line: " + (lexer.getLine() + 1) + "   PrimeraColumna: " + lexer.getColumn() + "   UltimaColumna: " + (lexer.getColumn() + lexer.lexeme.length()) + "\n";
                     break;
                 case ID:
                     String string = "";
                     if (lexer.lexeme.length() > 31) {
                         string = lexer.lexeme.substring(0, 31);
-                        resultado += "Error de truncado, " + token + " " + string + "  Line: " + lexer.getLine() + "\n"
-                                + "   FirstCol: " + lexer.getColumn() + "   LastCol: " + (lexer.getColumn() + lexer.lexeme.length()) + "\n";
+                        resultado += "Error de truncado, " + token + " " + string + "  Line: " + (lexer.getLine() + 1) + "   FirstCol: " + lexer.getColumn() + "   LastCol: " + (lexer.getColumn() + lexer.lexeme.length()) + "\n";
                     } else {
-                        resultado += "TOKEN: " + token + " " + lexer.lexeme + "  Line: " + lexer.getLine() + "\n"
-                                + "   FirstCol: " + lexer.getColumn() + "   LastCol: " + (lexer.getColumn() + lexer.lexeme.length()) + "\n";
+                        resultado += "TOKEN: " + token + " " + lexer.lexeme + "  Line: " + (lexer.getLine() + 1) + "   FirstCol: " + lexer.getColumn() + "   LastCol: " + (lexer.getColumn() + lexer.lexeme.length()) + "\n";
                     }
                     break;
-                case PALABRA_RESERVADA:
-                case INT:
-                case FLOAT:
-                case STRING:
-                    resultado += "TOKEN: " + token + " " + lexer.lexeme + "  Line: " + lexer.getLine() + "\n"
-                            + "   FirstCol: " + lexer.getColumn() + "   LastCol: " + (lexer.getColumn() + lexer.lexeme.length()) + "\n";
-                    break;
                 case COMENTARIO_M:
-                    if (!lexer.lexeme.endsWith("*/")) {
-                        resultado += "Error, comentario multilinea " + token + "  Line: " + lexer.getLine() + "\n"
-                                + "   FirstCol: " + lexer.getColumn() + "   LastCol: " + (lexer.getColumn() + lexer.lexeme.length()) + "\n";
-                        int firstNewLinePosition = 0;
-                        for (int i = 0; i < lexer.lexeme.length(); i++) {
-                            if (lexer.lexeme.charAt(i) == '\n') {
-                                firstNewLinePosition = i;
-                                break;
-                            }
+                    resultado += "Error, comentario multilinea " + token + "  Line: " + (lexer.getLine() + 1) + "   FirstCol: " + lexer.getColumn() + "   LastCol: " + (lexer.getColumn() + lexer.lexeme.length()) + "\n";
+                    int firstNewLinePosition = 0;
+                    for (int i = 0; i < lexer.lexeme.length(); i++) {
+                        if (lexer.lexeme.charAt(i) == '\n') {
+                            firstNewLinePosition = i;
+                            break;
                         }
-                        
+                    }
+
+                    if (firstNewLinePosition != 0) {
                         lexer.yypushback(lexer.lexeme.length() - firstNewLinePosition);
                     }
                     break;
                 default:
-                    resultado += "TOKEN: " + token + "  Line: " + lexer.getLine() + "\n"
-                            + "   FirstCol: " + lexer.getColumn() + "   LastCol: " + (lexer.getColumn() + lexer.lexeme.length()) + "\n";
+                    resultado += "TOKEN: " + token + "  Line: " + (lexer.getLine() + 1) + "   FirstCol: " + lexer.getColumn() + "   LastCol: " + (lexer.getColumn() + lexer.lexeme.length()) + "\n";
                     break;
             }
 
