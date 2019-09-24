@@ -12,6 +12,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFileChooser;
@@ -27,6 +28,8 @@ public class minisql extends javax.swing.JFrame {
     String root;
     File file;
     FileManager manager = new FileManager();
+    ArrayList<String> tokens = new ArrayList<>();
+    syntaxAnalyzer analizador = new syntaxAnalyzer();
 
     /**
      * Creates new form minisql
@@ -166,7 +169,7 @@ public class minisql extends javax.swing.JFrame {
             if (!text.isEmpty()) {
                 jTxtAFileContent.setText(text);
                 try {
-                    lexicalAnalyzer();
+                    execLexicalAnalyzer();
                 } catch (IOException ex) {
                     Logger.getLogger(minisql.class.getName()).log(Level.SEVERE, null, ex);
                 }
@@ -179,7 +182,7 @@ public class minisql extends javax.swing.JFrame {
         if (jTxtAFileContent.getText().isEmpty()) {
             JOptionPane.showMessageDialog(null, "Seleccione un archivo primero");
         } else {
-
+            String k = "";
         }
     }//GEN-LAST:event_jBtnAnalyzeActionPerformed
 
@@ -191,16 +194,16 @@ public class minisql extends javax.swing.JFrame {
         jflex.Main.generate(lexerFile);
     }
 
-    public void lexicalAnalyzer() throws IOException {
-        validateTokens();
+    public void execLexicalAnalyzer() throws IOException {
+        String resultado = validateTokens();
         String file_name = file.getName();
         String aux_root = root.substring(0, root.length() - file_name.length());
         file_name = file_name.substring(0, file_name.length() - 4);
-        manager.writeFile(file_name, jTextArea1.getText(), root, aux_root, "out");
-        JOptionPane.showMessageDialog(null, "El archivo " + file_name + " .out se escribió en\nla ubicación del archivo original");
+        manager.writeFile(file_name, resultado, root, aux_root, "out");
+        JOptionPane.showMessageDialog(null, "El archivo " + file_name + ".out se escribió en\nla ubicación del archivo original");
     }
 
-    public void validateTokens() throws FileNotFoundException, IOException {
+    public String validateTokens() throws FileNotFoundException, IOException {
         Reader reader = new BufferedReader(new FileReader(file));
 
         Lexer lexer = new Lexer(reader);
@@ -208,7 +211,7 @@ public class minisql extends javax.swing.JFrame {
         while (true) {
             Token token = lexer.yylex();
             if (token == null) {
-                jTextArea1.setText(resultado);
+                //jTextArea1.setText(resultado);
                 break;
             }
             switch (token) {
@@ -226,6 +229,7 @@ public class minisql extends javax.swing.JFrame {
                     } else {
                         resultado += "TOKEN: " + token + " " + lexer.lexeme + "  Line: " + (lexer.getLine() + 1) + "   FirstCol: " + lexer.getColumn() + "   LastCol: " + (lexer.getColumn() + lexer.lexeme.length()) + "\n";
                     }
+                    this.tokens.add(lexer.lexeme);
                     break;
                 case COMENTARIO_M:
                     resultado += "Error, comentario multilinea " + token + "  Line: " + (lexer.getLine() + 1) + "   FirstCol: " + lexer.getColumn() + "   LastCol: " + (lexer.getColumn() + lexer.lexeme.length()) + "\n";
@@ -243,10 +247,12 @@ public class minisql extends javax.swing.JFrame {
                     break;
                 default:
                     resultado += "TOKEN: " + token + "  Line: " + (lexer.getLine() + 1) + "   FirstCol: " + lexer.getColumn() + "   LastCol: " + (lexer.getColumn() + lexer.lexeme.length()) + "\n";
+                    this.tokens.add(lexer.lexeme);
                     break;
             }
 
         }
+        return resultado;
     }
 
     /**
