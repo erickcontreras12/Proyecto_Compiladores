@@ -29,7 +29,8 @@ public class minisql extends javax.swing.JFrame {
     File file;
     FileManager manager = new FileManager();
     ArrayList<String> tokens = new ArrayList<>();
-    syntaxAnalyzer analizador = new syntaxAnalyzer();
+    ArrayList<DetalleToken> detalle_token= new ArrayList<>();
+    syntaxAnalyzer analizador;
 
     /**
      * Creates new form minisql
@@ -182,7 +183,8 @@ public class minisql extends javax.swing.JFrame {
         if (jTxtAFileContent.getText().isEmpty()) {
             JOptionPane.showMessageDialog(null, "Seleccione un archivo primero");
         } else {
-            String k = "";
+            analizador = new syntaxAnalyzer(tokens, detalle_token);
+            analizador.makeAnalysis();
         }
     }//GEN-LAST:event_jBtnAnalyzeActionPerformed
 
@@ -229,7 +231,8 @@ public class minisql extends javax.swing.JFrame {
                     } else {
                         resultado += "TOKEN: " + token + " " + lexer.lexeme + "  Line: " + (lexer.getLine() + 1) + "   FirstCol: " + lexer.getColumn() + "   LastCol: " + (lexer.getColumn() + lexer.lexeme.length()) + "\n";
                     }
-                    this.tokens.add(lexer.lexeme);
+                    this.tokens.add(token.name());
+                    this.detalle_token.add(new DetalleToken(lexer.getColumn(),lexer.getLine() + 1,token.name()));
                     break;
                 case COMENTARIO_M:
                     resultado += "Error, comentario multilinea " + token + "  Line: " + (lexer.getLine() + 1) + "   FirstCol: " + lexer.getColumn() + "   LastCol: " + (lexer.getColumn() + lexer.lexeme.length()) + "\n";
@@ -247,7 +250,8 @@ public class minisql extends javax.swing.JFrame {
                     break;
                 default:
                     resultado += "TOKEN: " + token + "  Line: " + (lexer.getLine() + 1) + "   FirstCol: " + lexer.getColumn() + "   LastCol: " + (lexer.getColumn() + lexer.lexeme.length()) + "\n";
-                    this.tokens.add(lexer.lexeme);
+                    this.tokens.add(token.name());
+                    this.detalle_token.add(new DetalleToken(lexer.getColumn(),lexer.getLine() + 1,token.name()));
                     break;
             }
 
