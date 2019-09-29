@@ -54,7 +54,7 @@ public class minisql extends javax.swing.JFrame {
         jTxtAFileContent = new javax.swing.JTextArea();
         jLabel1 = new javax.swing.JLabel();
         jScrollPane2 = new javax.swing.JScrollPane();
-        jTextArea1 = new javax.swing.JTextArea();
+        jTAResult = new javax.swing.JTextArea();
         jBtnAnalyze = new javax.swing.JButton();
         jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
@@ -75,10 +75,10 @@ public class minisql extends javax.swing.JFrame {
 
         jLabel1.setText("Contenido de archivo:");
 
-        jTextArea1.setEditable(false);
-        jTextArea1.setColumns(20);
-        jTextArea1.setRows(5);
-        jScrollPane2.setViewportView(jTextArea1);
+        jTAResult.setEditable(false);
+        jTAResult.setColumns(20);
+        jTAResult.setRows(5);
+        jScrollPane2.setViewportView(jTAResult);
 
         jBtnAnalyze.setText("Realizar analisis");
         jBtnAnalyze.addActionListener(new java.awt.event.ActionListener() {
@@ -106,21 +106,16 @@ public class minisql extends javax.swing.JFrame {
                         .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 360, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(26, 26, 26)
                         .addComponent(jLabel3)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 12, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addGap(0, 0, Short.MAX_VALUE)
-                                .addComponent(jLabel2)
-                                .addGap(356, 356, 356))
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 360, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(0, 0, Short.MAX_VALUE))))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(jBtnAnalyze)
-                        .addGap(220, 220, 220))))
+                        .addGap(220, 220, 220))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 439, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel2))
+                        .addGap(24, 24, 24))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -169,6 +164,9 @@ public class minisql extends javax.swing.JFrame {
             }
             if (!text.isEmpty()) {
                 jTxtAFileContent.setText(text);
+                jTAResult.setText("");
+                tokens.clear();
+                detalle_token.clear();
                 try {
                     execLexicalAnalyzer();
                 } catch (IOException ex) {
@@ -184,7 +182,9 @@ public class minisql extends javax.swing.JFrame {
             JOptionPane.showMessageDialog(null, "Seleccione un archivo primero");
         } else {
             analizador = new syntaxAnalyzer(tokens, detalle_token);
-            analizador.makeAnalysis();
+            String result = analizador.makeAnalysis();
+            jTAResult.setText(result);
+            
         }
     }//GEN-LAST:event_jBtnAnalyzeActionPerformed
 
@@ -302,7 +302,7 @@ public class minisql extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel3;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JTextArea jTextArea1;
+    private javax.swing.JTextArea jTAResult;
     private javax.swing.JTextArea jTxtAFileContent;
     // End of variables declaration//GEN-END:variables
 }
