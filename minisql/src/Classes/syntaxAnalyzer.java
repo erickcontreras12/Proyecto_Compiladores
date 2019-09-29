@@ -15,6 +15,7 @@ public class syntaxAnalyzer {
 
     int cont;
     boolean itsBetween = false;
+    boolean itsLike = false;
     String temp, resultado;
     ArrayList<String> Tokens = new ArrayList();
     ArrayList<DetalleToken> detalles = new ArrayList();
@@ -51,8 +52,14 @@ public class syntaxAnalyzer {
                         break;
                     case "TRUNCATE":
                         returned_value = TRUNCATE();
+                        break;
                     case "DROP":
                         returned_value = DROP();
+                        break;
+                    case "UPDATE":
+                        break;
+                    case "DELETE":
+                        returned_value = DELETE();
                         break;
                     case "GO":
                         returned_value = 1;
@@ -1281,10 +1288,12 @@ public class syntaxAnalyzer {
 
     private int operadores() {
         if (temp.equals("MENOR") || temp.equals("MAYOR") || temp.equals("MENOR_O_IGUAL") || temp.equals("MAYOR_O_IGUAL")
-                || temp.equals("IGUAL_A") || temp.equals("DIFERENTE") || temp.equals("LIKE") || temp.equals("BETWEEN")) {
+                || temp.equals("IGUAL") || temp.equals("DIFERENTE") || temp.equals("LIKE") || temp.equals("BETWEEN")) {
             //todo ok
             if (temp.equals("BETWEEN")) {
                 itsBetween = true;
+            } else if (temp.equals("LIKE")) {
+                itsLike = true;
             }
         } else {
             resultado += "Error, se esperaba un operador condicional. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
@@ -1299,6 +1308,7 @@ public class syntaxAnalyzer {
         if (temp.equals("AND") || temp.equals("AND_O") || temp.equals("OR") || temp.equals("OR_O")) {
 
         } else if (temp.equals("PARENTESIS_CERRADO")) {
+            //todo ok
         } else {
             resultado += "Error, operador logico no valido. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
             return 1;
@@ -1310,7 +1320,7 @@ public class syntaxAnalyzer {
         cont++;
         temp = Tokens.get(cont);
         if (temp.equals("STRING") || temp.equals("BIT") || temp.equals("INT") || temp.equals("FLOAT")) {
-            if (itsBetween) {
+            if (itsBetween && temp.equals("INT")) {
                 cont++;
                 temp = Tokens.get(cont);
                 if (temp.equals("AND")) {
@@ -1327,6 +1337,20 @@ public class syntaxAnalyzer {
                     return 1;
                 }
                 itsBetween = false;
+            } else if (itsLike && temp.equals("STRING")) {
+                itsLike = false;
+                //todo ok
+            } else {
+                if (itsBetween) {
+                    itsBetween = false;
+                    resultado += "Error, tipo de dato erroneo. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                    return 1;
+                }
+                if (itsLike) {
+                    itsLike = false;
+                    resultado += "Error, tipo de dato erroneo. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                    return 1;
+                }
             }
         } else {
             resultado += "Error, tipo de dato erroneo. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
@@ -1654,12 +1678,231 @@ public class syntaxAnalyzer {
     }
 
     private int DELETE() {
+        if (opciones_delete() == 1) {
+            return 1;
+        }
+        return 2;
+    }
+
+    private int opciones_delete() {
         cont++;
         temp = Tokens.get(cont);
-        if (temp.equals("")) {
+        if (temp.equals("TOP")) {
+            if (expression() == 1) {
+                return 1;
+            }
 
+            if (porcentaje() == 1) {
+                return 1;
+            }
+
+        } else if (temp.equals("FROM")) {
+            if (objeto_nombreF() == 1) {
+                return 1;
+            }
         } else {
-            resultado += "Error, . Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, falta FROM. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            return 1;
+        }
+        return 2;
+    }
+
+    private int expression() {
+        cont++;
+        temp = Tokens.get(cont);
+        if (temp.equals("INT")) {
+
+        } else if (temp.equals("PARENTESIS_ABIERTO")) {
+            cont++;
+            temp = Tokens.get(cont);
+            if (temp.equals("INT")) {
+                cont++;
+                temp = Tokens.get(cont);
+                if (temp.equals("PARENTESIS_CERRADO")) {
+
+                } else {
+                    resultado += "Error, falta un parentesis. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                    return 1;
+                }
+            } else {
+                resultado += "Error, se esperaba un numero. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                return 1;
+            }
+        } else {
+            resultado += "Error, se esperaba un numero. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            return 1;
+        }
+        return 2;
+    }
+
+    private int porcentaje() {
+        cont++;
+        temp = Tokens.get(cont);
+        if (temp.equals("PERCENT")) {
+            cont++;
+            temp = Tokens.get(cont);
+            if (temp.equals("FROM")) {
+                if (objeto_nombreF() == 1) {
+                    return 1;
+                }
+            } else {
+                resultado += "Error, falta FROM. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                return 1;
+            }
+        } else if (temp.equals("FROM")) {
+            if (objeto_nombreF() == 1) {
+                return 1;
+            }
+        } else {
+            resultado += "Error, falta FROM. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            return 1;
+        }
+        return 2;
+    }
+
+    private int objeto_nombreF() {
+        cont++;
+        temp = Tokens.get(cont);
+        if (temp.equals("ID")) {
+            if (objeto_nombre1F() == 1) {
+                return 1;
+            }
+        } else {
+            resultado += "Error, identificador invalido. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            return 1;
+        }
+        return 2;
+
+    }
+
+    private int objeto_nombre1F() {
+        cont++;
+        temp = Tokens.get(cont);
+        if (temp.equals("PUNTO")) {
+            cont++;
+            temp = Tokens.get(cont);
+            if (temp.equals("ID")) {
+                if (objeto_nombre1F() == 1) {
+                    return 1;
+                }
+            } else {
+                resultado += "Error, falta un identificador. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                return 1;
+            }
+
+        } else if (temp.equals("WHERE")) {
+            if (condicionales() == 1) {
+                return 1;
+            }
+        } else if (temp.equals("PUNTO_COMA")) {
+            //todo ok
+        } else {
+            resultado += "Error, no se realizo ninguna accion. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            return 1;
+        }
+        return 2;
+    }
+
+    private int condicionales() {
+        cont++;
+        temp = Tokens.get(cont);
+        if (temp.equals("ID")) {
+            if (operadores1() == 1) {
+                return 1;
+            }
+
+            if (tipo_dato1() == 1) {
+                return 1;
+            }
+
+            if (condicionales1() == 1) {
+                return 1;
+            }
+        } else {
+            resultado += "Error, se esperaba un identificador. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            return 1;
+        }
+        return 2;
+    }
+
+    private int condicionales1() {
+        if (operadores_logicos1() == 1) {
+            return 1;
+        }
+        return 2;
+    }
+
+    private int operadores1() {
+        cont++;
+        temp = Tokens.get(cont);
+        if (temp.equals("MENOR") || temp.equals("MAYOR") || temp.equals("MAYOR_O_IGUAL") || temp.equals("MENOR_O_IGUAL")
+                || temp.equals("IGUAL") || temp.equals("DIFERENTE") || temp.equals("LIKE") || temp.equals("BETWEEN")) {
+            if (temp.equals("BETWEEN")) {
+                itsBetween = true;
+            } else if (temp.equals("LIKE")) {
+                itsLike = true;
+            }
+        } else {
+            resultado += "Error, se necesita un operador. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            return 1;
+        }
+        return 2;
+    }
+
+    private int operadores_logicos1() {
+        cont++;
+        temp = Tokens.get(cont);
+        if (temp.equals("AND") || temp.equals("AND_O") || temp.equals("OR") || temp.equals("OR_O")) {
+            if (condicionales() == 1) {
+                return 1;
+            }
+        } else if (temp.equals("PUNTO_COMA")) {
+            //todo ok
+        } else {
+            resultado += "Error, operador logico no valido. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            return 1;
+        }
+        return 2;
+    }
+
+    private int tipo_dato1() {
+        cont++;
+        temp = Tokens.get(cont);
+        if (temp.equals("STRING") || temp.equals("BIT") || temp.equals("INT") || temp.equals("FLOAT")) {
+            if (itsBetween && temp.equals("INT")) {
+                cont++;
+                temp = Tokens.get(cont);
+                if (temp.equals("AND")) {
+                    cont++;
+                    temp = Tokens.get(cont);
+                    if (temp.equals("INT")) {
+                        //todo ok
+                    } else {
+                        resultado += "Error, tipo de dato erroneo. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                        return 1;
+                    }
+                } else {
+                    resultado += "Error, falta un AND. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                    return 1;
+                }
+                itsBetween = false;
+            } else if (itsLike && temp.equals("STRING")) {
+                itsLike = false;
+                //todo ok
+            } else {
+                if (itsBetween) {
+                    itsBetween = false;
+                    resultado += "Error, tipo de dato erroneo. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                    return 1;
+                }
+                if (itsLike) {
+                    itsLike = false;
+                    resultado += "Error, tipo de dato erroneo. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                    return 1;
+                }
+            }
+        } else {
+            resultado += "Error, tipo de dato erroneo. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
             return 1;
         }
         return 2;
