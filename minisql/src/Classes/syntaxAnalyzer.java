@@ -370,7 +370,7 @@ public class syntaxAnalyzer {
                 return 1;
             }
         } else if (temp.equals("VIEW")) {
-            if (view() == 1) {
+            if (a_view() == 1) {
                 return 1;
             }
         } else if (temp.equals("TABLE")) {
@@ -435,16 +435,99 @@ public class syntaxAnalyzer {
         return 2;
     }
 
-    private int view() {
+    private int a_view() {
         cont++;
-        //
         temp = Tokens.get(cont);
-        if (temp.equals("ID") || temp.equals("CURRENT")) {
-            if (tipo_alter_db() == 1) {
+        if (temp.equals("ID")) {
+            if (objeto_nombre1V() == 1) {
                 return 1;
             }
         } else {
-            resultado += "Error, base de datos incorrecta. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, nombre de vista incorrecto. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            return 1;
+        }
+        return 2;
+    }
+    
+    private int objeto_nombreV() {
+        cont++;
+        temp = Tokens.get(cont);
+        if (temp.equals("ID")) {
+            if (objeto_nombre1V() == 1) {
+                return 1;
+            }
+        } else {
+            resultado += "Error, identificador invalido. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            return 1;
+        }
+        return 2;
+
+    }
+
+    private int objeto_nombre1V() {
+        cont++;
+        temp = Tokens.get(cont);
+        if (temp.equals("PUNTO")) {
+            cont++;
+            temp = Tokens.get(cont);
+            if (temp.equals("ID")) {
+                if (objeto_nombre1V() == 1) {
+                    return 1;
+                }
+            } else {
+                resultado += "Error, falta un identificador. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                return 1;
+            }
+
+        } else if (temp.equals("ID") || temp.equals("AS") || temp.equals("COMA")) {
+            if (temp.equals("ID")) {
+                cont--;
+                if (columna_view() == 1) {
+                    return 1;
+                }
+            }else if (temp.equals("COMA")) {
+                if (objeto_nombreV() == 1) {
+                    return 1;
+                }
+            } else{
+                cont++;
+                temp = Tokens.get(cont);
+                if (temp.equals("SELECT")) {
+                    if (SELECT() == 1) {
+                        return 1;
+                    }
+                } else {
+                    resultado += "Error, falta el query. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                    return 1;
+                }
+            }
+        } else {
+            resultado += "Error, no se realizo ninguna accion. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            return 1;
+        }
+        return 2;
+    }
+    
+    private int columna_view() {
+        cont++;
+        temp = Tokens.get(cont);
+        if (temp.equals("ID")) {
+            if (objeto_nombre1V() == 1) {
+                return 1;
+            }
+        }else if (temp.equals("AS")) {
+            cont++;
+                temp = Tokens.get(cont);
+                if (temp.equals("SELECT")) {
+                    if (SELECT() == 1) {
+                        return 1;
+                    }
+                } else {
+                    resultado += "Error, falta el query. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                    return 1;
+                }
+        }  else {
+            resultado += "Error, falta una declaracion. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
             return 1;
         }
         return 2;
@@ -1456,20 +1539,6 @@ public class syntaxAnalyzer {
         return 2;
     }
 
-    private int SELECT() {
-        cont++;
-        temp = Tokens.get(cont);
-        if (temp.equals("")) {
-//            if (metodo() == 1) {
-//                return 1;
-//            }
-        } else {
-            resultado += "Error, se esperaba una coma. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
-            return 1;
-        }
-        return 2;
-    }
-
     private int DROP() {
         cont++;
         temp = Tokens.get(cont);
@@ -1919,4 +1988,19 @@ public class syntaxAnalyzer {
         }
         return 2;
     }
+
+    private int SELECT() {
+        cont++;
+        temp = Tokens.get(cont);
+        if (temp.equals("PUNTO_COMA")) {
+//            if (metodo() == 1) {
+//                return 1;
+//            }
+        } else {
+            resultado += "Error, se esperaba una coma. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            return 1;
+        }
+        return 2;
+    }
+
 }
