@@ -840,7 +840,11 @@ public class syntaxAnalyzer {
                 return 1;
             }
 
-        } else if (temp.equals("PARENTESIS_CERRADO")) {
+        } else if (temp.equals("COMA")) {
+            if (objeto_nombreKEY() == 1) {
+                return 1;
+            }
+        } else if (temp.equals("PARENTESIS_CERRADO") || temp.equals("PUNTO_COMA")) {
 
         } else {
             resultado += "Error, no se realizo ninguna accion. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
@@ -1005,46 +1009,14 @@ public class syntaxAnalyzer {
             if (objeto_nombreCT() == 1) {
                 return 1;
             }
-        } else if (temp.equals("FOREIGN")) {
-            cont++;
-            temp = Tokens.get(cont);
-            if (temp.equals("KEY")) {
-                cont++;
-                temp = Tokens.get(cont);
-                if (temp.equals("PARENTESIS_ABIERTO")) {
-                    if (objeto_nombreKEY() == 1) {
-                        return 1;
-                    }
-
-                    cont++;
-                    temp = Tokens.get(cont);
-                    if (temp.equals("REFERENCES")) {
-                        if (objeto_nombreR() == 1) {
-                            return 1;
-                        }
-
-                        if (objeto_nombreKEY() == 1) {
-                            return 1;
-                        }
-                        cont++;
-                    } else {
-                        resultado += "Error, falta una referencia. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
-                        return 1;
-                    }
-
-                } else {
-                    resultado += "Error, falta un parentesis. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
-                    return 1;
-                }
-
-            } else {
-                resultado += "Error, falta la palabra key. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+        } else if (temp.equals("FOREIGN") || temp.equals("CHECK") || temp.equals("UNIQUE") || temp.equals("PRIMARY")) {
+            if (tipo_constraint() == 1) {
                 return 1;
             }
         } else if (columna() == 2) {
-            return 2;
-        } else if (columna() == 1) {
             return 1;
+        } else if (columna() == 2) {
+            return 2;
         } else {
             resultado += "Error, propiedad invalida. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
             return 1;
@@ -2280,6 +2252,7 @@ public class syntaxAnalyzer {
             }
         }
 
+        temp = Tokens.get(cont);
         if (temp.equals("COMA")) {
             if (seleccionar_add() == 1) {
                 return 1;
@@ -2640,6 +2613,9 @@ public class syntaxAnalyzer {
             if (expression() == 1) {
                 return 1;
             }
+            if (porcentaje2() == 1) {
+                return 1;
+            }
 
             if (objeto_nombreU() == 1) {
                 return 1;
@@ -2648,6 +2624,27 @@ public class syntaxAnalyzer {
             if (objeto_nombre1U() == 1) {
                 return 1;
             }
+        } else {
+            resultado += "Error, falta FROM. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            return 1;
+        }
+        return 2;
+    }
+
+    private int porcentaje2() {
+        cont++;
+        temp = Tokens.get(cont);
+        if (temp.equals("PERCENT")) {
+            cont++;
+            temp = Tokens.get(cont);
+            if (temp.equals("ID")) {
+                cont--;
+            } else {
+                resultado += "Error, falta FROM. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                return 1;
+            }
+        } else if (temp.equals("ID")) {
+            cont--;
         } else {
             resultado += "Error, falta FROM. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
             return 1;
@@ -2667,7 +2664,6 @@ public class syntaxAnalyzer {
             return 1;
         }
         return 2;
-
     }
 
     private int objeto_nombre1U() {
@@ -2684,7 +2680,6 @@ public class syntaxAnalyzer {
                 resultado += "Error, falta un identificador. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
                 return 1;
             }
-
         } else if (temp.equals("SET")) {
             if (objeto_nombreCU() == 1) {
                 return 1;
@@ -2750,8 +2745,7 @@ public class syntaxAnalyzer {
         if (temp.equals("BIT") || temp.equals("STRING") || temp.equals("INT") || temp.equals("FLOAT") || temp.equals("ID")) {
             cont++;
             temp = Tokens.get(cont);
-            if (temp.equals("MAS") || temp.equals("MENOS") || temp.equals("MULT") || temp.equals("DIV") || temp.equals("RES")
-                    || temp.equals("LIKE")) {
+            if (temp.equals("MAS") || temp.equals("MENOS") || temp.equals("MULT") || temp.equals("DIV") || temp.equals("RES")) {
                 if (asignaciones1() == 1) {
                     return 1;
                 }
@@ -2762,6 +2756,10 @@ public class syntaxAnalyzer {
                     if (asignaciones1() == 1) {
                         return 1;
                     }
+                } else if (temp.equals("COMA")) {
+                    if (objeto_nombreCU() == 1) {
+                        return 1;
+                    }
                 } else {
                     cont--;
                 }
@@ -2769,11 +2767,13 @@ public class syntaxAnalyzer {
                 if (condicionales() == 1) {
                     return 1;
                 }
-            }else if (temp.equals("COMA")) {
+            } else if (temp.equals("COMA")) {
                 if (objeto_nombreCU() == 1) {
                     return 1;
                 }
-            }  else {
+            } else if (temp.equals("PUNTO_COMA")) {
+                //todo ok
+            } else {
                 resultado += "Error, se esperaba un operador. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
                 return 1;
             }
@@ -2806,6 +2806,970 @@ public class syntaxAnalyzer {
         return 2;
     }
 
+    private int SELECT() {
+        if (opcion_select() == 1) {
+            return 1;
+        }
+
+        //Busco el FROM
+        temp = Tokens.get(cont);
+        if (temp.equals("FROM")) {
+            if (origen() == 1) {
+                return 1;
+            }
+        }
+        return 2;
+    }
+
+    private int opcion_select() {
+        cont++;
+        temp = Tokens.get(cont);
+        if (temp.equals("MULT")) {
+            //todo ok
+            cont++;
+            temp = Tokens.get(cont);
+            if (temp.equals("FROM")) {
+
+            } else {
+                resultado += "Error, falta FROM. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                return 1;
+            }
+        } else if (temp.equals("DISTINCT") || temp.equals("ALL") || temp.equals("TOP")) {
+            if (temp.equals("TOP")) {
+                if (expression() == 1) {
+                    return 1;
+                }
+            }
+            if (columna_select() == 1) {
+                return 1;
+            }
+
+        } else if (temp.equals("SUM") || temp.equals("COUNT") || temp.equals("AVG") || temp.equals("MAX") || temp.equals("MIN")
+                || temp.equals("BIT") || temp.equals("STRING") || temp.equals("INT") || temp.equals("FLOAT") || temp.equals("ID")) {
+            cont--;     //para que vuelva a reconocer el nombre, dato o funcion
+            if (columna_select() == 1) {
+                return 1;
+            }
+        } else {
+            resultado += "Error, se esperaba una seleccion de columnas. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            return 1;
+        }
+        return 2;
+    }
+
+    private int columna_select() {
+        cont++;
+        temp = Tokens.get(cont);
+        if (temp.equals("SUM") || temp.equals("COUNT") || temp.equals("AVG") || temp.equals("MAX") || temp.equals("MIN")) {
+            if (funciones() == 1) {
+                return 1;
+            }
+
+        } else if (temp.equals("BIT") || temp.equals("STRING") || temp.equals("INT") || temp.equals("FLOAT")
+                || temp.equals("ID") || temp.equals("PARENTESIS_ABIERTO")) {
+            cont--;     //resto para que reconozca otra vez
+            if (opcion_columna() == 1) {
+                return 1;
+            }
+        } else {
+            resultado += "Error, tipo de columna incorrecta. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            return 1;
+        }
+        return 2;
+    }
+
+    private int opcion_columna() {
+        cont++;
+        temp = Tokens.get(cont);
+        if (temp.equals("BIT") || temp.equals("STRING") || temp.equals("INT") || temp.equals("FLOAT") || temp.equals("ID")) {
+            String helper = temp;
+            cont++;
+            temp = Tokens.get(cont);
+            if (temp.equals("MAS") || temp.equals("MENOS") || temp.equals("MULT") || temp.equals("DIV") || temp.equals("RES") || temp.equals("IGUAL")) {
+                if (opcion_columna() == 1) {
+                    return 1;
+                }
+            } else if (temp.equals("PARENTESIS_CERRADO")) {
+                cont++;
+                temp = Tokens.get(cont);
+                if (temp.equals("MAS") || temp.equals("MENOS") || temp.equals("MULT") || temp.equals("DIV") || temp.equals("RES") || temp.equals("IGUAL")) {
+                    if (opcion_columna() == 1) {
+                        return 1;
+                    }
+                } else if (temp.equals("AS")) {
+                    cont++;
+                    temp = Tokens.get(cont);
+                    if (temp.equals("ID") || temp.equals("STRING")) {
+                        cont++;
+                        temp = Tokens.get(cont);
+                        if (temp.equals("COMA")) {
+                            if (columna_select() == 1) {
+                                return 1;
+                            }
+                        } else if (temp.equals("FROM")) {
+
+                        } else {
+                            resultado += "Error, falta una coma. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                            return 1;
+                        }
+                    } else {
+                        resultado += "Error, falta una coma. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                        return 1;
+                    }
+                } else if (temp.equals("FROM")) {
+
+                } else {
+                    cont--;
+                }
+            } else if (temp.equals("AS")) {
+                cont++;
+                temp = Tokens.get(cont);
+                if (temp.equals("ID") || temp.equals("STRING")) {
+                    cont++;
+                    temp = Tokens.get(cont);
+                    if (temp.equals("COMA")) {
+                        if (columna_select() == 1) {
+                            return 1;
+                        }
+                    } else if (temp.equals("FROM")) {
+
+                    } else {
+                        resultado += "Error, falta una coma. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                        return 1;
+                    }
+                } else {
+                    resultado += "Error, falta una coma. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                    return 1;
+                }
+            } else if (temp.equals("FROM")) {
+                //todo ok
+            } else if (temp.equals("COMA")) {
+                if (columna_select() == 1) {
+                    return 1;
+                }
+            } else if (temp.equals("PUNTO") && helper.equals("ID")) {
+                cont--;
+                if (objeto_nombre1C() == 1) {
+                    return 1;
+                }
+                if (temp.equals("FROM")) {
+                    return 2;
+                }
+
+                cont++;
+                temp = Tokens.get(cont);
+                if (temp.equals("AS")) {
+                    cont++;
+                    temp = Tokens.get(cont);
+                    if (temp.equals("ID") || temp.equals("STRING")) {
+                        cont++;
+                        temp = Tokens.get(cont);
+                        if (temp.equals("COMA")) {
+                            if (columna_select() == 1) {
+                                return 1;
+                            }
+                        } else if (temp.equals("FROM")) {
+
+                        } else {
+                            resultado += "Error, falta una coma. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                            return 1;
+                        }
+                    } else {
+                        resultado += "Error, falta una coma. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                        return 1;
+                    }
+                } else if (temp.equals("FROM")) {
+                    //todo ok
+                } else if (temp.equals("COMA")) {
+                    if (columna_select() == 1) {
+                        return 1;
+                    }
+                } else {
+                    resultado += "Error, falta una coma. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                    return 1;
+                }
+
+            } else {
+                resultado += "Error, se esperaba un operador. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                return 1;
+            }
+        } else if (temp.equals("PARENTESIS_ABIERTO")) {
+            if (opcion_columna() == 1) {
+                return 1;
+            }
+        } else if (temp.equals("PARENTESIS_CERRADO") || temp.equals("FROM")) {
+            //todo ok que salga
+            if (temp.equals("FROM")) {
+                //todo ok
+            } else {
+                cont++;
+                temp = Tokens.get(cont);
+                if (temp.equals("MAS") || temp.equals("MENOS") || temp.equals("MULT") || temp.equals("DIV") || temp.equals("RES") || temp.equals("IGUAL")) {
+                    if (opcion_columna() == 1) {
+                        return 1;
+                    }
+                } else if (temp.equals("AS")) {
+                    cont++;
+                    temp = Tokens.get(cont);
+                    if (temp.equals("ID") || temp.equals("STRING")) {
+                        cont++;
+                        temp = Tokens.get(cont);
+                        if (temp.equals("COMA")) {
+                            if (columna_select() == 1) {
+                                return 1;
+                            }
+                        } else if (temp.equals("FROM")) {
+
+                        } else {
+                            resultado += "Error, falta una coma. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                            return 1;
+                        }
+                    } else {
+                        resultado += "Error, falta una coma. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                        return 1;
+                    }
+                } else if (temp.equals("FROM")) {
+
+                } else {
+                    cont--;
+                }
+            }
+
+        } else {
+            resultado += "Error, tipo de dato invalido. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            return 1;
+        }
+        return 2;
+    }
+
+    private int objeto_nombre1C() {
+        cont++;
+        temp = Tokens.get(cont);
+        if (temp.equals("PUNTO")) {
+            cont++;
+            temp = Tokens.get(cont);
+            if (temp.equals("ID")) {
+                if (objeto_nombre1C() == 1) {
+                    return 1;
+                }
+            } else {
+                resultado += "Error, falta un identificador. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                return 1;
+            }
+
+        } else if (temp.equals("COMA")) {
+            if (columna_select() == 1) {
+                return 1;
+            }
+        } else if (temp.equals("AS")) {
+            cont++;
+            temp = Tokens.get(cont);
+            if (temp.equals("ID") || temp.equals("STRING")) {
+                cont++;
+                temp = Tokens.get(cont);
+                if (temp.equals("COMA")) {
+                    if (columna_select() == 1) {
+                        return 1;
+                    }
+                } else if (temp.equals("FROM")) {
+
+                } else {
+                    resultado += "Error, falta una coma. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                    return 1;
+                }
+            } else {
+                resultado += "Error, falta una coma. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                return 1;
+            }
+        } else if (temp.equals("FROM")) {
+
+        } else {
+            resultado += "Error, falta un punto o un identificador. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            return 1;
+        }
+        return 2;
+    }
+
+    private int funciones() {
+        cont++;
+        temp = Tokens.get(cont);
+        if (temp.equals("PARENTESIS_ABIERTO")) {
+            if (valor() == 1) {
+                return 1;
+            }
+
+            cont++;
+            temp = Tokens.get(cont);
+            if (temp.equals("COMA")) {
+                if (columna_select() == 1) {
+                    return 1;
+                }
+            } else if (temp.equals("AS")) {
+                cont++;
+                temp = Tokens.get(cont);
+                if (temp.equals("ID") || temp.equals("STRING")) {
+                    cont++;
+                    temp = Tokens.get(cont);
+                    if (temp.equals("COMA")) {
+                        if (columna_select() == 1) {
+                            return 1;
+                        }
+                    } else if (temp.equals("FROM")) {
+
+                    } else {
+                        resultado += "Error, falta una coma. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                        return 1;
+                    }
+                } else {
+                    resultado += "Error, falta una coma. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                    return 1;
+                }
+            } else if (temp.equals("FROM")) {
+
+            } else {
+                resultado += "Error, falta una coma. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                return 1;
+            }
+        } else {
+            resultado += "Error, se necesita un parentesis. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            return 1;
+        }
+        return 2;
+    }
+
+    private int valor() {
+        cont++;
+        temp = Tokens.get(cont);
+        if (temp.equals("MULT") || temp.equals("BIT") || temp.equals("INT")) {
+            cont++;
+            temp = Tokens.get(cont);
+            if (temp.equals("PARENTESIS_CERRADO")) {
+                //todo ok
+            } else {
+                resultado += "Error, falta un parentesis. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                return 1;
+            }
+        } else if (temp.equals("DISTINCT")) {
+            if (objeto_nombreKEY() == 1) {
+                return 1;
+            }
+        } else if (temp.equals("ID")) {
+            if (objeto_nombre1KEY() == 1) {
+                return 1;
+            }
+        } else {
+            resultado += "Error, no se puede operar con la funcion de agregacion. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            return 1;
+        }
+        return 2;
+    }
+
+    private int origen() {
+        cont++;
+        temp = Tokens.get(cont);
+        if (temp.equals("ID")) {
+            if (objeto_nombre1OT() == 1) {
+                return 1;
+            }
+        } else {
+            resultado += "Error, se esperaba un identificador. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            return 1;
+        }
+        return 2;
+    }
+
+    private int objeto_nombreOT() {
+        cont++;
+        temp = Tokens.get(cont);
+        if (temp.equals("ID")) {
+            if (objeto_nombre1OT() == 1) {
+                return 1;
+            }
+        } else {
+            resultado += "Error, identificador invalido. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            return 1;
+        }
+        return 2;
+
+    }
+
+    private int objeto_nombre1OT() {
+        cont++;
+        temp = Tokens.get(cont);
+        if (temp.equals("PUNTO")) {
+            cont++;
+            temp = Tokens.get(cont);
+            if (temp.equals("ID")) {
+                if (objeto_nombre1OT() == 1) {
+                    return 1;
+                }
+            } else {
+                resultado += "Error, falta un identificador. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                return 1;
+            }
+        } else if (temp.equals("AS")) {
+            cont++;
+            temp = Tokens.get(cont);
+            if (temp.equals("ID") || temp.equals("STRING")) {
+                if (objeto_nombre1OT() == 1) {
+                    return 1;
+                }
+            } else {
+                resultado += "Error, falta un identificador. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                return 1;
+            }
+        } else if (temp.equals("ID")) {
+            cont++;
+            temp = Tokens.get(cont);
+            if (temp.equals("COMA")) {
+                if (objeto_nombreOT() == 1) {
+                    return 1;
+                }
+            } else if (temp.equals("PUNTO_COMA")) {
+
+            } else if (temp.equals("WHERE")) {
+                if (condicionales2() == 1) {
+                    return 1;
+                }
+            } else if (temp.equals("GROUP")) {
+                if (agrupado() == 1) {
+                    return 1;
+                }
+            } else if (temp.equals("HAVING")) {
+                if (teniendo() == 1) {
+                    return 1;
+                }
+            } else if (temp.equals("ORDER")) {
+                if (ordenado() == 1) {
+                    return 1;
+                }
+            } else {
+                resultado += "Error, no se realizo ninguna accion. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                return 1;
+            }
+        } else if (temp.equals("COMA")) {
+            if (objeto_nombreOT() == 1) {
+                return 1;
+            }
+        } else if (temp.equals("PUNTO_COMA")) {
+            //todo ok
+        } else if (temp.equals("INNER") || temp.equals("RIGHT") || temp.equals("LEFT") || temp.equals("FULL") || temp.equals("JOIN")) {
+            if (temp.equals("INNER")) {
+                if (join() == 1) {
+                    return 1;
+                }
+            } else if (temp.equals("JOIN")) {
+                cont--;
+                if (join() == 1) {
+                    return 1;
+                }
+            } else {
+                if (tipo_join() == 1) {
+                    return 1;
+                }
+            }
+        } else if (temp.equals("WHERE")) {
+            if (condicionales2() == 1) {
+                return 1;
+            }
+        } else if (temp.equals("GROUP")) {
+            if (agrupado() == 1) {
+                return 1;
+            }
+        } else if (temp.equals("HAVING")) {
+            if (teniendo() == 1) {
+                return 1;
+            }
+        } else if (temp.equals("ORDER")) {
+            if (ordenado() == 1) {
+                return 1;
+            }
+        } else {
+            resultado += "Error, no se realizo ninguna accion. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            return 1;
+        }
+        return 2;
+    }
+
+    private int tipo_join() {
+        cont++;
+        temp = Tokens.get(cont);
+        if (temp.equals("OUTER")) {
+            if (join() == 1) {
+                return 1;
+            }
+        } else if (temp.equals("JOIN")) {
+            cont--;
+            if (join() == 1) {
+                return 1;
+            }
+        } else {
+            resultado += "Error, falta la palabra JOIN. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            return 1;
+        }
+        return 2;
+    }
+
+    private int join() {
+        cont++;
+        temp = Tokens.get(cont);
+        if (temp.equals("JOIN")) {
+            if (objeto_nombreJT() == 1) {
+                return 1;
+            }
+        } else {
+            resultado += "Error, falta la palabra JOIN. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            return 1;
+        }
+        return 2;
+    }
+
+    private int objeto_nombreJT() {
+        cont++;
+        temp = Tokens.get(cont);
+        if (temp.equals("ID")) {
+            if (objeto_nombre1JT() == 1) {
+                return 1;
+            }
+        } else {
+            resultado += "Error, identificador invalido. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            return 1;
+        }
+        return 2;
+    }
+
+    private int objeto_nombre1JT() {
+        cont++;
+        temp = Tokens.get(cont);
+        if (temp.equals("PUNTO")) {
+            cont++;
+            temp = Tokens.get(cont);
+            if (temp.equals("ID")) {
+                if (objeto_nombre1JT() == 1) {
+                    return 1;
+                }
+            } else {
+                resultado += "Error, falta un identificador. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                return 1;
+            }
+        } else if (temp.equals("AS")) {
+            cont++;
+            temp = Tokens.get(cont);
+            if (temp.equals("ID") || temp.equals("STRING")) {
+                if (objeto_nombre1JT() == 1) {
+                    return 1;
+                }
+            } else {
+                resultado += "Error, falta un identificador. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                return 1;
+            }
+        } else if (temp.equals("ID")) {
+            if (objeto_nombre1JT() == 1) {
+                return 1;
+            }
+        } else if (temp.equals("ON")) {
+            if (objeto_nombreCU2() == 1) {
+                return 1;
+            }
+
+        } else {
+            resultado += "Error, la palabra ON. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            return 1;
+        }
+        return 2;
+    }
+
+    private int objeto_nombreCU2() {
+        cont++;
+        temp = Tokens.get(cont);
+        if (temp.equals("ID")) {
+            if (objeto_nombre1CU2() == 1) {
+                return 1;
+            }
+        } else {
+            resultado += "Error, identificador invalido. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            return 1;
+        }
+        return 2;
+
+    }
+
+    private int objeto_nombre1CU2() {
+        cont++;
+        temp = Tokens.get(cont);
+        if (temp.equals("PUNTO")) {
+            cont++;
+            temp = Tokens.get(cont);
+            if (temp.equals("ID")) {
+                if (objeto_nombre1CU2() == 1) {
+                    return 1;
+                }
+            } else {
+                resultado += "Error, falta un identificador. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                return 1;
+            }
+
+        } else if (temp.equals("IGUAL")) {
+            if (objeto_nombreJ() == 1) {
+                return 1;
+            }
+        } else {
+            resultado += "Error, no se realizo ninguna accion. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            return 1;
+        }
+        return 2;
+    }
+
+    private int objeto_nombreJ() {
+        cont++;
+        temp = Tokens.get(cont);
+        if (temp.equals("ID")) {
+            if (objeto_nombre1J() == 1) {
+                return 1;
+            }
+        } else {
+            resultado += "Error, identificador invalido. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            return 1;
+        }
+        return 2;
+
+    }
+
+    private int objeto_nombre1J() {
+        cont++;
+        temp = Tokens.get(cont);
+        if (temp.equals("PUNTO")) {
+            cont++;
+            temp = Tokens.get(cont);
+            if (temp.equals("ID")) {
+                if (objeto_nombre1J() == 1) {
+                    return 1;
+                }
+            } else {
+                resultado += "Error, falta un identificador. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                return 1;
+            }
+        } else if (temp.equals("INNER") || temp.equals("RIGHT") || temp.equals("LEFT") || temp.equals("FULL") || temp.equals("JOIN")) {
+            if (temp.equals("INNER")) {
+                if (join() == 1) {
+                    return 1;
+                }
+            } else if (temp.equals("JOIN")) {
+                cont--;
+                if (join() == 1) {
+                    return 1;
+                }
+            } else {
+                if (tipo_join() == 1) {
+                    return 1;
+                }
+            }
+        } else if (temp.equals("PUNTO_COMA")) {
+            //todo ok
+        } else if (temp.equals("WHERE")) {
+            if (condicionales2() == 1) {
+                return 1;
+            }
+        } else if (temp.equals("GROUP")) {
+            if (agrupado() == 1) {
+                return 1;
+            }
+        } else if (temp.equals("HAVING")) {
+            if (teniendo() == 1) {
+                return 1;
+            }
+        } else if (temp.equals("ORDER")) {
+            if (ordenado() == 1) {
+                return 1;
+            }
+        } else {
+            resultado += "Error, no se realizo ninguna accion. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            return 1;
+        }
+        return 2;
+    }
+
+    private int condicionales2() {
+        cont++;
+        temp = Tokens.get(cont);
+        if (temp.equals("ID")) {
+            if (operadores1() == 1) {
+                return 1;
+            }
+
+            if (tipo_dato1() == 1) {
+                return 1;
+            }
+
+            if (condicionales12() == 1) {
+                return 1;
+            }
+        } else {
+            resultado += "Error, se esperaba un identificador. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            return 1;
+        }
+        return 2;
+    }
+
+    private int condicionales12() {
+        if (operadores_logicos12() == 1) {
+            return 1;
+        }
+        return 2;
+    }
+
+    private int operadores_logicos12() {
+        cont++;
+        temp = Tokens.get(cont);
+        if (temp.equals("AND") || temp.equals("AND_O") || temp.equals("OR") || temp.equals("OR_O")) {
+            if (condicionales2() == 1) {
+                return 1;
+            }
+        } else if (temp.equals("PUNTO_COMA")) {
+            //todo ok
+        } else if (temp.equals("GROUP")) {
+            if (agrupado() == 1) {
+                return 1;
+            }
+        } else if (temp.equals("HAVING")) {
+            if (teniendo() == 1) {
+                return 1;
+            }
+        } else if (temp.equals("ORDER")) {
+            if (ordenado() == 1) {
+                return 1;
+            }
+        } else {
+            resultado += "Error, operador logico no valido. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            return 1;
+        }
+        return 2;
+    }
+
+    private int agrupado() {
+        cont++;
+        temp = Tokens.get(cont);
+        if (temp.equals("BY")) {
+            if (objeto_nombreG() == 1) {
+                return 1;
+            }
+        } else {
+            resultado += "Error, falta BY. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            return 1;
+        }
+        return 2;
+    }
+
+    private int objeto_nombreG() {
+        cont++;
+        temp = Tokens.get(cont);
+        if (temp.equals("ID")) {
+            if (objeto_nombre1G() == 1) {
+                return 1;
+            }
+        } else {
+            resultado += "Error, identificador invalido. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            return 1;
+        }
+        return 2;
+    }
+
+    private int objeto_nombre1G() {
+        cont++;
+        temp = Tokens.get(cont);
+        if (temp.equals("PUNTO")) {
+            cont++;
+            temp = Tokens.get(cont);
+            if (temp.equals("ID")) {
+                if (objeto_nombre1G() == 1) {
+                    return 1;
+                }
+            } else {
+                resultado += "Error, falta un identificador. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                return 1;
+            }
+        } else if (temp.equals("COMA")) {
+            if (objeto_nombreG() == 1) {
+                return 1;
+            }
+        } else if (temp.equals("PUNTO_COMA")) {
+            //todo ok
+        } else if (temp.equals("HAVING")) {
+            if (teniendo() == 1) {
+                return 1;
+            }
+        } else if (temp.equals("ORDER")) {
+            if (ordenado() == 1) {
+                return 1;
+            }
+        } else {
+            resultado += "Error, no se realizo ninguna accion. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            return 1;
+        }
+        return 2;
+    }
+
+    private int teniendo() {
+        cont++;
+        temp = Tokens.get(cont);
+        if (temp.equals("SUM") || temp.equals("COUNT") || temp.equals("AVG") || temp.equals("MAX") || temp.equals("MIN")) {
+            cont++;
+            temp = Tokens.get(cont);
+            if (temp.equals("PARENTESIS_ABIERTO")) {
+                if (valor() == 1) {
+                    return 1;
+                }
+
+                if (operadores1() == 1) {
+                    return 1;
+                }
+
+                if (tipo_dato1() == 1) {
+                    return 1;
+                }
+
+                if (condicionales123() == 1) {
+                    return 1;
+                }
+
+            } else {
+
+            }
+        } else if (temp.equals("ID")) {
+            cont++;
+            temp = Tokens.get(cont);
+            if (temp.equals("PUNTO")) {
+                if (teniendo() == 1) {
+                    return 1;
+                }
+            } else {
+                cont--;
+                if (operadores1() == 1) {
+                    return 1;
+                }
+
+                if (tipo_dato1() == 1) {
+                    return 1;
+                }
+
+                if (condicionales123() == 1) {
+                    return 1;
+                }
+            }
+
+        } else {
+            resultado += "Error, se esperaba una funcion de agregacion. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            return 1;
+        }
+        return 2;
+    }
+
+    private int condicionales123() {
+        if (operadores_logicos123() == 1) {
+            return 1;
+        }
+        return 2;
+    }
+
+    private int operadores_logicos123() {
+        cont++;
+        temp = Tokens.get(cont);
+        if (temp.equals("AND") || temp.equals("AND_O") || temp.equals("OR") || temp.equals("OR_O")) {
+            if (teniendo() == 1) {
+                return 1;
+            }
+        } else if (temp.equals("PUNTO_COMA")) {
+            //todo ok
+        } else if (temp.equals("ORDER")) {
+            if (ordenado() == 1) {
+                return 1;
+            }
+        } else {
+            resultado += "Error, operador logico no valido. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            return 1;
+        }
+        return 2;
+    }
+
+    private int ordenado() {
+        cont++;
+        temp = Tokens.get(cont);
+        if (temp.equals("BY")) {
+            if (objeto_nombreOB() == 1) {
+                return 1;
+            }
+        } else {
+            resultado += "Error, falta BY. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            return 1;
+        }
+        return 2;
+    }
+
+    private int objeto_nombreOB() {
+        cont++;
+        temp = Tokens.get(cont);
+        if (temp.equals("ID")) {
+            if (objeto_nombre1OB() == 1) {
+                return 1;
+            }
+        } else if (temp.equals("SUM") || temp.equals("COUNT") || temp.equals("AVG") || temp.equals("MAX") || temp.equals("MIN")) {
+            cont++;
+            temp = Tokens.get(cont);
+            if (temp.equals("PARENTESIS_ABIERTO")) {
+                if (valor() == 1) {
+                    return 1;
+                }
+                if (objeto_nombre1OB() == 1) {
+                    return 1;
+                }
+            }
+        } else {
+            resultado += "Error, identificador invalido. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            return 1;
+        }
+        return 2;
+    }
+
+    private int objeto_nombre1OB() {
+        cont++;
+        temp = Tokens.get(cont);
+        if (temp.equals("PUNTO")) {
+            cont++;
+            temp = Tokens.get(cont);
+            if (temp.equals("ID")) {
+                if (objeto_nombre1OB() == 1) {
+                    return 1;
+                }
+            } else {
+                resultado += "Error, falta un identificador. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                return 1;
+            }
+        } else if (temp.equals("COMA")) {
+            if (objeto_nombreOB() == 1) {
+                return 1;
+            }
+        } else if (temp.equals("ASC") || temp.equals("DESC")) {
+            cont++;
+            temp = Tokens.get(cont);
+            if (temp.equals("COMA")) {
+                if (objeto_nombreOB() == 1) {
+                    return 1;
+                }
+            } else if (temp.equals("PUNTO_COMA")) {
+                //todo ok
+            } else {
+                resultado += "Error, falta una coma. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                return 1;
+            }
+        } else if (temp.equals("PUNTO_COMA")) {
+            //todo ok
+        } else {
+            resultado += "Error, no se realizo ninguna accion. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            return 1;
+        }
+        return 2;
+    }
+
     private int formato() {
         cont++;
         temp = Tokens.get(cont);
@@ -2817,19 +3781,4 @@ public class syntaxAnalyzer {
         }
         return 2;
     }
-
-    private int SELECT() {
-        cont++;
-        temp = Tokens.get(cont);
-        if (temp.equals("PUNTO_COMA")) {
-//            if (metodo() == 1) {
-//                return 1;
-//            }
-        } else {
-            resultado += "Error, se esperaba una coma. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
-            return 1;
-        }
-        return 2;
-    }
-
 }
