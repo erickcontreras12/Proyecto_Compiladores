@@ -14,17 +14,54 @@ import java.util.ArrayList;
 public class syntaxAnalyzer {
 
     int cont;
+    int cont_general;
     boolean itsBetween = false;
     boolean itsLike = false;
     String temp, resultado;
     ArrayList<String> Tokens = new ArrayList();
+    ArrayList<String> lista_general = new ArrayList();
     ArrayList<DetalleToken> detalles = new ArrayList();
 
     public syntaxAnalyzer(ArrayList<String> Tokens, ArrayList<DetalleToken> Detalle) {
         cont = 0;
         resultado = "";
-        this.Tokens = Tokens;
+        lista_general = Tokens;
         detalles = Detalle;
+    }
+
+    public String makeTextAnalysis() {
+        String response = "";
+        cont_general = 0;
+        while (cont_general < lista_general.size()) {
+            String aux = "";
+            while (true) {
+                aux = lista_general.get(cont_general);
+                if (aux.equals("PUNTO_COMA") || aux.equals("GO")) {
+                    Tokens.add(lista_general.get(cont_general));
+                    cont = 0;
+                    if (Tokens.contains("ERROR") || Tokens.contains("ERROR_F")) {
+                        for (int i = 0; i < Tokens.size(); i++) {
+                            if (Tokens.get(i).equals("ERROR") || Tokens.get(i).equals("ERROR_F")) {
+                                int position = cont_general - (Tokens.size() - i);
+                                response += "Se encontro un error lexico. " + detalles.get(position).fila + " Columna: " + detalles.get(position).columna + "\n";
+                            }
+                        }
+                    } else {
+                        response += makeAnalysis();
+                    }
+                    Tokens.clear();
+                } else {
+                    Tokens.add(lista_general.get(cont_general));
+                }
+                cont_general++;
+
+                if (cont_general == lista_general.size()) {
+                    break;
+                }
+            }
+        }
+
+        return response;
     }
 
     /**
@@ -68,7 +105,7 @@ public class syntaxAnalyzer {
                         break;
                     default:
                         returned_value = 1;
-                        resultado += "Error, inicio de sentencia invalido. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                        resultado += "Error, inicio de sentencia invalido. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                         break;
                 }
             } else if (returned_value == 1) {
@@ -83,10 +120,10 @@ public class syntaxAnalyzer {
             } else {
                 if (aux_token.equals("PUNTO_COMA") || aux_token.equals("GO")) {
                     returned_value = 0;
-                    resultado += "Sentencia correcta, finaliza en linea: " + detalles.get(cont).fila + " y columna: " + detalles.get(cont).columna + "\n";
+                    //resultado += "Sentencia correcta, finaliza en linea: " + detalles.get(cont_general-cont-1).fila + " y columna: " + detalles.get(cont_general-cont-1).columna + "\n";
                     cont++;
                 } else {
-                    resultado += "Error, falta punto y coma. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                    resultado += "Error, falta punto y coma. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                     returned_value = 1;
                 }
             }
@@ -126,7 +163,7 @@ public class syntaxAnalyzer {
                 return 1;
             }
         } else {
-            resultado += "Error, se esperaba un identificador o un INTO. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, se esperaba un identificador o un INTO. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -144,7 +181,7 @@ public class syntaxAnalyzer {
                 return 1;
             }
         } else {
-            resultado += "Error, se esperaba un identificador. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, se esperaba un identificador. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -161,7 +198,7 @@ public class syntaxAnalyzer {
                     return 1;
                 }
             } else {
-                resultado += "Error, se esperaba un identificador. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                resultado += "Error, se esperaba un identificador. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                 return 1;
             }
         } else if (temp.equals("PARENTESIS_ABIERTO")) {
@@ -179,12 +216,12 @@ public class syntaxAnalyzer {
                 if (temp.equals("VALUES")) {
                     cont++;
                 } else {
-                    resultado += "Error, se esperaba la palabra VALUES. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                    resultado += "Error, se esperaba la palabra VALUES. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                     return 1;
                 }
             }
         } else {
-            resultado += "Error, se esperaba un parentesis. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, se esperaba un parentesis. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -199,7 +236,7 @@ public class syntaxAnalyzer {
             if (temp.equals("ID")) {
                 //Todo ok
             } else {
-                resultado += "Error, se esperaba un identificador. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                resultado += "Error, se esperaba un identificador. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                 return 1;
             }
         } else if (temp.equals("PARENTESIS_ABIERTO")) {
@@ -217,12 +254,12 @@ public class syntaxAnalyzer {
                 if (temp.equals("VALUES")) {
                     cont++;
                 } else {
-                    resultado += "Error, se esperaba la palabra VALUES. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                    resultado += "Error, se esperaba la palabra VALUES. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                     return 1;
                 }
             }
         } else {
-            resultado += "Error, se esperaba un parentesis. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, se esperaba un parentesis. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -236,7 +273,7 @@ public class syntaxAnalyzer {
                 return 1;
             }
         } else {
-            resultado += "Error de identificador, nombre de columna inválido. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error de identificador, nombre de columna inválido. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -252,7 +289,7 @@ public class syntaxAnalyzer {
         } else if (temp.equals("PARENTESIS_CERRADO")) {
 
         } else {
-            resultado += "Error, se esperaba una coma o cerrar el conjunto. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, se esperaba una coma o cerrar el conjunto. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -268,7 +305,7 @@ public class syntaxAnalyzer {
         } else if (temp.equals("PARENTESIS_CERRADO")) {
 
         } else {
-            resultado += "Error, falta una coma. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, falta una coma. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -283,7 +320,7 @@ public class syntaxAnalyzer {
             if (temp.equals("VALUES")) {
                 cont++;
             } else {
-                resultado += "Error, se esperaba la palabra VALUES. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                resultado += "Error, se esperaba la palabra VALUES. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                 return 1;
             }
         } else if (temp.equals("VALUES")) {
@@ -291,7 +328,7 @@ public class syntaxAnalyzer {
                 return 1;
             }
         } else {
-            resultado += "Error, falta declaracion de valores con VALUES. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, falta declaracion de valores con VALUES. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -305,7 +342,7 @@ public class syntaxAnalyzer {
                 return 1;
             }
         } else {
-            resultado += "Error, se esperaba un parentesis. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, se esperaba un parentesis. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -320,7 +357,7 @@ public class syntaxAnalyzer {
                 return 1;
             }
         } else {
-            resultado += "Error, tipo de dato invalido. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, tipo de dato invalido. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -338,7 +375,7 @@ public class syntaxAnalyzer {
                 return 1;
             }
         } else {
-            resultado += "Error, se esperaba una coma o parentesis. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, se esperaba una coma o parentesis. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -354,7 +391,7 @@ public class syntaxAnalyzer {
         } else if (temp.equals("PUNTO_COMA")) {
 
         } else {
-            resultado += "Error, se esperaba una coma. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, se esperaba una coma. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -384,7 +421,7 @@ public class syntaxAnalyzer {
                 return 1;
             }
         } else {
-            resultado += "Error, se esperaba un objeto. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, se esperaba un objeto. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -398,7 +435,7 @@ public class syntaxAnalyzer {
                 return 1;
             }
         } else {
-            resultado += "Error, base de datos incorrecta. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, base de datos incorrecta. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -419,19 +456,19 @@ public class syntaxAnalyzer {
                     if (temp.equals("ID")) {
                         cont++;
                     } else {
-                        resultado += "Error, se espera un identificador. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                        resultado += "Error, se espera un identificador. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                         return 1;
                     }
                 } else {
-                    resultado += "Error, se espera un '='. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                    resultado += "Error, se espera un '='. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                     return 1;
                 }
             } else {
-                resultado += "Error, falta la palabra reservada NAME. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                resultado += "Error, falta la palabra reservada NAME. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                 return 1;
             }
         } else {
-            resultado += "Error, se espera un MODIFY. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, se espera un MODIFY. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -445,7 +482,7 @@ public class syntaxAnalyzer {
                 return 1;
             }
         } else {
-            resultado += "Error, nombre de vista incorrecto. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, nombre de vista incorrecto. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -459,7 +496,7 @@ public class syntaxAnalyzer {
                 return 1;
             }
         } else {
-            resultado += "Error, identificador invalido. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, identificador invalido. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -477,7 +514,7 @@ public class syntaxAnalyzer {
                     return 1;
                 }
             } else {
-                resultado += "Error, falta un identificador. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                resultado += "Error, falta un identificador. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                 return 1;
             }
 
@@ -499,12 +536,12 @@ public class syntaxAnalyzer {
                         return 1;
                     }
                 } else {
-                    resultado += "Error, falta el query. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                    resultado += "Error, falta el query. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                     return 1;
                 }
             }
         } else {
-            resultado += "Error, no se realizo ninguna accion. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, no se realizo ninguna accion. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -525,11 +562,11 @@ public class syntaxAnalyzer {
                     return 1;
                 }
             } else {
-                resultado += "Error, falta el query. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                resultado += "Error, falta el query. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                 return 1;
             }
         } else {
-            resultado += "Error, falta una declaracion. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, falta una declaracion. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -548,11 +585,11 @@ public class syntaxAnalyzer {
 
                 cont++;
             } else {
-                resultado += "Error, se esperaba un ON. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                resultado += "Error, se esperaba un ON. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                 return 1;
             }
         } else {
-            resultado += "Error, index inexistente. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, index inexistente. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -566,7 +603,7 @@ public class syntaxAnalyzer {
                 return 1;
             }
         } else {
-            resultado += "Error, identificador invalido. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, identificador invalido. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -584,7 +621,7 @@ public class syntaxAnalyzer {
                     return 1;
                 }
             } else {
-                resultado += "Error, falta un identificador. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                resultado += "Error, falta un identificador. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                 return 1;
             }
 
@@ -593,7 +630,7 @@ public class syntaxAnalyzer {
                 return 1;
             }
         } else {
-            resultado += "Error, no se realizo ninguna accion. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, no se realizo ninguna accion. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -622,7 +659,7 @@ public class syntaxAnalyzer {
                 return 1;
             }
         } else {
-            resultado += "Error, identificador invalido. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, identificador invalido. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -640,7 +677,7 @@ public class syntaxAnalyzer {
                     return 1;
                 }
             } else {
-                resultado += "Error, falta un identificador. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                resultado += "Error, falta un identificador. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                 return 1;
             }
 
@@ -649,7 +686,7 @@ public class syntaxAnalyzer {
                 return 1;
             }
         } else {
-            resultado += "Error, no se realizo ninguna accion. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, no se realizo ninguna accion. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -665,7 +702,7 @@ public class syntaxAnalyzer {
                 }
                 cont++;
             } else {
-                resultado += "Error, falta la palabra COLUMN. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                resultado += "Error, falta la palabra COLUMN. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                 return 1;
             }
         } else if (temp.equals("ADD")) {
@@ -677,7 +714,7 @@ public class syntaxAnalyzer {
                 return 1;
             }
         } else {
-            resultado += "Error, no existe esa accion. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, no existe esa accion. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -702,7 +739,7 @@ public class syntaxAnalyzer {
                 return 1;
             }
         } else {
-            resultado += "Error, identificador invalido. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, identificador invalido. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -720,7 +757,7 @@ public class syntaxAnalyzer {
                     return 1;
                 }
             } else {
-                resultado += "Error, falta un identificador. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                resultado += "Error, falta un identificador. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                 return 1;
             }
 
@@ -732,7 +769,7 @@ public class syntaxAnalyzer {
                 return 1;
             }
         } else {
-            resultado += "Error, no se realizo ninguna accion. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, no se realizo ninguna accion. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -751,15 +788,15 @@ public class syntaxAnalyzer {
                     if (temp.equals("PARENTESIS_CERRADO")) {
 
                     } else {
-                        resultado += "Error, falta un parentesis. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                        resultado += "Error, falta un parentesis. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                         return 1;
                     }
                 } else {
-                    resultado += "Error, se esperaba un numero. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                    resultado += "Error, se esperaba un numero. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                     return 1;
                 }
             } else {
-                resultado += "Error, falta un parentesis. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                resultado += "Error, falta un parentesis. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                 return 1;
             }
         } else if (temp.equals("DECIMAL") || temp.equals("NUMERIC")) {
@@ -780,23 +817,23 @@ public class syntaxAnalyzer {
                             if (temp.equals("PARENTESIS_CERRADO")) {
 
                             } else {
-                                resultado += "Error, falta un parentesis. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                                resultado += "Error, falta un parentesis. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                                 return 1;
                             }
                         } else {
-                            resultado += "Error, se esperaba un numero. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                            resultado += "Error, se esperaba un numero. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                             return 1;
                         }
                     } else {
-                        resultado += "Error, falta una coma. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                        resultado += "Error, falta una coma. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                         return 1;
                     }
                 } else {
-                    resultado += "Error, se esperaba un numero. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                    resultado += "Error, se esperaba un numero. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                     return 1;
                 }
             } else {
-                resultado += "Error, falta un parentesis. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                resultado += "Error, falta un parentesis. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                 return 1;
             }
         } else if (temp.equals("TEXT") || temp.equals("IMAGE") || temp.equals("VARBINARY") || temp.equals("DATE") || temp.equals("DATETIME") || temp.equals("DATETIME2")
@@ -804,7 +841,7 @@ public class syntaxAnalyzer {
                 || temp.equals("REAL") || temp.equals("BIT_P") || temp.equals("INT_P")) {
             //Todo ok
         } else {
-            resultado += "Error, se esperaba un tipo de dato. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, se esperaba un tipo de dato. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -818,7 +855,7 @@ public class syntaxAnalyzer {
                 return 1;
             }
         } else {
-            resultado += "Error, identificador invalido. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, identificador invalido. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -836,7 +873,7 @@ public class syntaxAnalyzer {
                     return 1;
                 }
             } else {
-                resultado += "Error, falta un identificador. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                resultado += "Error, falta un identificador. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                 return 1;
             }
 
@@ -847,7 +884,7 @@ public class syntaxAnalyzer {
         } else if (temp.equals("PARENTESIS_CERRADO") || temp.equals("PUNTO_COMA")) {
 
         } else {
-            resultado += "Error, no se realizo ninguna accion. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, no se realizo ninguna accion. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -861,7 +898,7 @@ public class syntaxAnalyzer {
                 return 1;
             }
         } else {
-            resultado += "Error, identificador invalido. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, identificador invalido. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -879,14 +916,14 @@ public class syntaxAnalyzer {
                     return 1;
                 }
             } else {
-                resultado += "Error, falta un identificador. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                resultado += "Error, falta un identificador. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                 return 1;
             }
 
         } else if (temp.equals("PARENTESIS_ABIERTO")) {
 
         } else {
-            resultado += "Error, no se realizo ninguna accion. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, no se realizo ninguna accion. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -902,7 +939,7 @@ public class syntaxAnalyzer {
                 if (temp.equals("NULL")) {
                     //todo ok
                 } else {
-                    resultado += "Error, falta un NULL. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                    resultado += "Error, falta un NULL. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                     return 1;
                 }
             }
@@ -931,17 +968,17 @@ public class syntaxAnalyzer {
                                 return 1;
                             }
                         } else {
-                            resultado += "Error, falta una referencia. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                            resultado += "Error, falta una referencia. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                             return 1;
                         }
 
                     } else {
-                        resultado += "Error, falta un parentesis. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                        resultado += "Error, falta un parentesis. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                         return 1;
                     }
                 }
             } else {
-                resultado += "Error, falta la palabra key. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                resultado += "Error, falta la palabra key. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                 return 1;
             }
         } else if (temp.equals("DEFAULT")) {
@@ -950,7 +987,7 @@ public class syntaxAnalyzer {
             if (temp.equals("STRING") || temp.equals("BIT") || temp.equals("INT") || temp.equals("FLOAT")) {
                 //todo ok
             } else {
-                resultado += "Error, tipo de dato erroneo. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                resultado += "Error, tipo de dato erroneo. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                 return 1;
             }
         } else if (temp.equals("IDENTITY")) {
@@ -971,24 +1008,24 @@ public class syntaxAnalyzer {
                             if (temp.equals("PARENTESIS_CERRADO")) {
                                 //todo ok
                             } else {
-                                resultado += "Error, falta un parentesis. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                                resultado += "Error, falta un parentesis. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                                 return 1;
                             }
                         } else {
 
-                            resultado += "Error, se esperaba un numero. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                            resultado += "Error, se esperaba un numero. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                             return 1;
                         }
                     } else {
-                        resultado += "Error, falta una coma . Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                        resultado += "Error, falta una coma . Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                         return 1;
                     }
                 } else {
-                    resultado += "Error, se esperaba un numero. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                    resultado += "Error, se esperaba un numero. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                     return 1;
                 }
             } else {
-                resultado += "Error, falta un parentesis. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                resultado += "Error, falta un parentesis. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                 return 1;
             }
 
@@ -996,7 +1033,7 @@ public class syntaxAnalyzer {
             //Viene sin constraint, entonces le resto 1 para que luego agarre el punto y coma arriba
             cont--;
         } else {
-            resultado += "Error, no existe el tipo de constraint. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, no existe el tipo de constraint. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -1018,7 +1055,7 @@ public class syntaxAnalyzer {
         } else if (columna() == 2) {
             return 2;
         } else {
-            resultado += "Error, propiedad invalida. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, propiedad invalida. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -1060,7 +1097,7 @@ public class syntaxAnalyzer {
                 }
             }
         } else {
-            resultado += "Error, accion invalida. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, accion invalida. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -1074,7 +1111,7 @@ public class syntaxAnalyzer {
                 return 1;
             }
         } else {
-            resultado += "Error, identificador invalido. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, identificador invalido. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -1092,14 +1129,14 @@ public class syntaxAnalyzer {
                     return 1;
                 }
             } else {
-                resultado += "Error, falta un identificador. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                resultado += "Error, falta un identificador. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                 return 1;
             }
 
         } else if (temp.equals("PUNTO_COMA")) {
 
         } else {
-            resultado += "Error, no se realizo ninguna accion. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, no se realizo ninguna accion. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -1113,7 +1150,7 @@ public class syntaxAnalyzer {
                 return 1;
             }
         } else {
-            resultado += "Error, identificador invalido. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, identificador invalido. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -1131,7 +1168,7 @@ public class syntaxAnalyzer {
                     return 1;
                 }
             } else {
-                resultado += "Error, falta un identificador. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                resultado += "Error, falta un identificador. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                 return 1;
             }
 
@@ -1142,7 +1179,7 @@ public class syntaxAnalyzer {
                 }
             }
         } else {
-            resultado += "Error, no se realizo ninguna accion. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, no se realizo ninguna accion. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -1156,7 +1193,7 @@ public class syntaxAnalyzer {
                 return 1;
             }
         } else {
-            resultado += "Error, identificador invalido. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, identificador invalido. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -1175,7 +1212,7 @@ public class syntaxAnalyzer {
                     return 1;
                 }
             } else {
-                resultado += "Error, falta un identificador. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                resultado += "Error, falta un identificador. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                 return 1;
             }
 
@@ -1184,7 +1221,7 @@ public class syntaxAnalyzer {
                 return 1;
             }
         } else {
-            resultado += "Error, no se realizo ninguna accion. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, no se realizo ninguna accion. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -1200,7 +1237,7 @@ public class syntaxAnalyzer {
                 }
                 cont++;
             } else {
-                resultado += "Error, falta un parentesis. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                resultado += "Error, falta un parentesis. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                 return 1;
             }
         } else if (temp.equals("FOREIGN") || temp.equals("PRIMARY")) {
@@ -1228,16 +1265,16 @@ public class syntaxAnalyzer {
                             }
                             cont++;
                         } else {
-                            resultado += "Error, falta la referencia. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                            resultado += "Error, falta la referencia. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                             return 1;
                         }
                     }
                 } else {
-                    resultado += "Error, falta un parentesis. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                    resultado += "Error, falta un parentesis. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                     return 1;
                 }
             } else {
-                resultado += "Error, falta la palabra key. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                resultado += "Error, falta la palabra key. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                 return 1;
             }
         } else if (temp.equals("CHECK")) {
@@ -1250,7 +1287,7 @@ public class syntaxAnalyzer {
                 cont++;
             }
         } else {
-            resultado += "Error, constraint invalido. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, constraint invalido. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -1309,7 +1346,7 @@ public class syntaxAnalyzer {
                 return 1;
             }
         } else {
-            resultado += "Error, identificador invalido. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, identificador invalido. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -1327,7 +1364,7 @@ public class syntaxAnalyzer {
                     return 1;
                 }
             } else {
-                resultado += "Error, falta un identificador. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                resultado += "Error, falta un identificador. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                 return 1;
             }
 
@@ -1337,7 +1374,7 @@ public class syntaxAnalyzer {
                 return 1;
             }
         } else {
-            resultado += "Error, no se realizo ninguna accion. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, no se realizo ninguna accion. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -1353,7 +1390,7 @@ public class syntaxAnalyzer {
                 itsLike = true;
             }
         } else {
-            resultado += "Error, se esperaba un operador condicional. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, se esperaba un operador condicional. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -1367,7 +1404,7 @@ public class syntaxAnalyzer {
         } else if (temp.equals("PARENTESIS_CERRADO")) {
             //todo ok
         } else {
-            resultado += "Error, operador logico no valido. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, operador logico no valido. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -1386,11 +1423,11 @@ public class syntaxAnalyzer {
                     if (temp.equals("INT")) {
                         //todo ok
                     } else {
-                        resultado += "Error, tipo de dato erroneo. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                        resultado += "Error, tipo de dato erroneo. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                         return 1;
                     }
                 } else {
-                    resultado += "Error, falta un AND. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                    resultado += "Error, falta un AND. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                     return 1;
                 }
                 itsBetween = false;
@@ -1400,17 +1437,17 @@ public class syntaxAnalyzer {
             } else {
                 if (itsBetween) {
                     itsBetween = false;
-                    resultado += "Error, tipo de dato erroneo. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                    resultado += "Error, tipo de dato erroneo. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                     return 1;
                 }
                 if (itsLike) {
                     itsLike = false;
-                    resultado += "Error, tipo de dato erroneo. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                    resultado += "Error, tipo de dato erroneo. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                     return 1;
                 }
             }
         } else {
-            resultado += "Error, tipo de dato erroneo. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, tipo de dato erroneo. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -1427,11 +1464,11 @@ public class syntaxAnalyzer {
                     return 1;
                 }
             } else {
-                resultado += "Error, falta la palabra WITH. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                resultado += "Error, falta la palabra WITH. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                 return 1;
             }
         } else {
-            resultado += "Error, usuario inexistente. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, usuario inexistente. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -1458,7 +1495,7 @@ public class syntaxAnalyzer {
                                 return 1;
                             }
                         } else {
-                            resultado += "Error, se esperaba un String. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                            resultado += "Error, se esperaba un String. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                             return 1;
                         }
                     } else {
@@ -1467,17 +1504,17 @@ public class syntaxAnalyzer {
                                 return 1;
                             }
                         } else {
-                            resultado += "Error, identificador invalido . Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                            resultado += "Error, identificador invalido . Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                             return 1;
                         }
                     }
                 } else {
-                    resultado += "Error, falta un '='. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                    resultado += "Error, falta un '='. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                     return 1;
                 }
             }
         } else {
-            resultado += "Error, accion invalida. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, accion invalida. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -1493,7 +1530,7 @@ public class syntaxAnalyzer {
         } else if (temp.equals("PUNTO_COMA")) {
 
         } else {
-            resultado += "Error, se esperaba una coma. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, se esperaba una coma. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -1507,7 +1544,7 @@ public class syntaxAnalyzer {
                 return 1;
             }
         } else {
-            resultado += "Error, falta definir la tabla. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, falta definir la tabla. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -1529,7 +1566,7 @@ public class syntaxAnalyzer {
                 return 1;
             }
         } else {
-            resultado += "Error, objeto invalido. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, objeto invalido. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -1549,11 +1586,11 @@ public class syntaxAnalyzer {
                         return 1;
                     }
                 } else {
-                    resultado += "Error, se esperaba un identificador. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                    resultado += "Error, se esperaba un identificador. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                     return 1;
                 }
             } else {
-                resultado += "Error, falta un Exist. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                resultado += "Error, falta un Exist. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                 return 1;
             }
         } else if (temp.equals("ID")) {
@@ -1561,7 +1598,7 @@ public class syntaxAnalyzer {
                 return 1;
             }
         } else {
-            resultado += "Error, movimiento invalido. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, movimiento invalido. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -1581,11 +1618,11 @@ public class syntaxAnalyzer {
                         return 1;
                     }
                 } else {
-                    resultado += "Error, se esperaba un identificador. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                    resultado += "Error, se esperaba un identificador. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                     return 1;
                 }
             } else {
-                resultado += "Error, falta un Exist. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                resultado += "Error, falta un Exist. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                 return 1;
             }
         } else if (temp.equals("ID")) {
@@ -1593,7 +1630,7 @@ public class syntaxAnalyzer {
                 return 1;
             }
         } else {
-            resultado += "Error, movimiento invalido. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, movimiento invalido. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -1610,13 +1647,13 @@ public class syntaxAnalyzer {
                     return 1;
                 }
             } else {
-                resultado += "Error, se esperaba un identificador. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                resultado += "Error, se esperaba un identificador. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                 return 1;
             }
         } else if (temp.equals("PUNTO_COMA")) {
 
         } else {
-            resultado += "Error, se esperaba una coma. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, se esperaba una coma. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -1636,11 +1673,11 @@ public class syntaxAnalyzer {
                         return 1;
                     }
                 } else {
-                    resultado += "Error, se esperaba un identificador. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                    resultado += "Error, se esperaba un identificador. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                     return 1;
                 }
             } else {
-                resultado += "Error, falta un Exist. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                resultado += "Error, falta un Exist. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                 return 1;
             }
         } else if (temp.equals("ID")) {
@@ -1648,7 +1685,7 @@ public class syntaxAnalyzer {
                 return 1;
             }
         } else {
-            resultado += "Error, movimiento invalido. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, movimiento invalido. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -1667,7 +1704,7 @@ public class syntaxAnalyzer {
                 return 1;
             }
         } else {
-            resultado += "Error, palabra invalida. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, palabra invalida. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -1681,7 +1718,7 @@ public class syntaxAnalyzer {
                 return 1;
             }
         } else {
-            resultado += "Error, identificador invalido. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, identificador invalido. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -1699,7 +1736,7 @@ public class syntaxAnalyzer {
                     return 1;
                 }
             } else {
-                resultado += "Error, falta un identificador. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                resultado += "Error, falta un identificador. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                 return 1;
             }
 
@@ -1714,7 +1751,7 @@ public class syntaxAnalyzer {
                 return 1;
             }
         } else {
-            resultado += "Error, no se realizo ninguna accion. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, no se realizo ninguna accion. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -1744,7 +1781,7 @@ public class syntaxAnalyzer {
                 return 1;
             }
         } else {
-            resultado += "Error, falta FROM. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, falta FROM. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -1764,15 +1801,15 @@ public class syntaxAnalyzer {
                 if (temp.equals("PARENTESIS_CERRADO")) {
 
                 } else {
-                    resultado += "Error, falta un parentesis. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                    resultado += "Error, falta un parentesis. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                     return 1;
                 }
             } else {
-                resultado += "Error, se esperaba un numero. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                resultado += "Error, se esperaba un numero. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                 return 1;
             }
         } else {
-            resultado += "Error, se esperaba un numero. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, se esperaba un numero. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -1789,7 +1826,7 @@ public class syntaxAnalyzer {
                     return 1;
                 }
             } else {
-                resultado += "Error, falta FROM. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                resultado += "Error, falta FROM. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                 return 1;
             }
         } else if (temp.equals("FROM")) {
@@ -1797,7 +1834,7 @@ public class syntaxAnalyzer {
                 return 1;
             }
         } else {
-            resultado += "Error, falta FROM. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, falta FROM. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -1811,7 +1848,7 @@ public class syntaxAnalyzer {
                 return 1;
             }
         } else {
-            resultado += "Error, identificador invalido. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, identificador invalido. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -1829,7 +1866,7 @@ public class syntaxAnalyzer {
                     return 1;
                 }
             } else {
-                resultado += "Error, falta un identificador. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                resultado += "Error, falta un identificador. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                 return 1;
             }
 
@@ -1840,7 +1877,7 @@ public class syntaxAnalyzer {
         } else if (temp.equals("PUNTO_COMA")) {
             //todo ok
         } else {
-            resultado += "Error, no se realizo ninguna accion. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, no se realizo ninguna accion. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -1862,7 +1899,7 @@ public class syntaxAnalyzer {
                 return 1;
             }
         } else {
-            resultado += "Error, se esperaba un identificador. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, se esperaba un identificador. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -1886,7 +1923,7 @@ public class syntaxAnalyzer {
                 itsLike = true;
             }
         } else {
-            resultado += "Error, se necesita un operador. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, se necesita un operador. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -1902,7 +1939,7 @@ public class syntaxAnalyzer {
         } else if (temp.equals("PUNTO_COMA")) {
             //todo ok
         } else {
-            resultado += "Error, operador logico no valido. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, operador logico no valido. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -1921,11 +1958,11 @@ public class syntaxAnalyzer {
                     if (temp.equals("INT")) {
                         //todo ok
                     } else {
-                        resultado += "Error, tipo de dato erroneo. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                        resultado += "Error, tipo de dato erroneo. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                         return 1;
                     }
                 } else {
-                    resultado += "Error, falta un AND. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                    resultado += "Error, falta un AND. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                     return 1;
                 }
                 itsBetween = false;
@@ -1935,17 +1972,17 @@ public class syntaxAnalyzer {
             } else {
                 if (itsBetween) {
                     itsBetween = false;
-                    resultado += "Error, tipo de dato erroneo. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                    resultado += "Error, tipo de dato erroneo. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                     return 1;
                 }
                 if (itsLike) {
                     itsLike = false;
-                    resultado += "Error, tipo de dato erroneo. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                    resultado += "Error, tipo de dato erroneo. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                     return 1;
                 }
             }
         } else {
-            resultado += "Error, tipo de dato erroneo. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, tipo de dato erroneo. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -1979,7 +2016,7 @@ public class syntaxAnalyzer {
                         return 1;
                     }
                 } else {
-                    resultado += "Error, se esperaba un objeto. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                    resultado += "Error, se esperaba un objeto. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                     return 1;
                 }
             } else {
@@ -1988,7 +2025,7 @@ public class syntaxAnalyzer {
                 }
             }
         } else {
-            resultado += "Error, se esperaba un objeto. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, se esperaba un objeto. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -2002,7 +2039,7 @@ public class syntaxAnalyzer {
                 return 1;
             }
         } else {
-            resultado += "Error, se esperaba un identificador. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, se esperaba un identificador. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -2023,19 +2060,19 @@ public class syntaxAnalyzer {
                     if (temp.equals("ID")) {
                         cont++;
                     } else {
-                        resultado += "Error, falta un identificador. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                        resultado += "Error, falta un identificador. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                         return 1;
                     }
                 } else {
-                    resultado += "Error, falta LOGIN. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                    resultado += "Error, falta LOGIN. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                     return 1;
                 }
             } else {
-                resultado += "Error, falta FOR. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                resultado += "Error, falta FOR. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                 return 1;
             }
         } else {
-            resultado += "Error, se esperaba un identificador. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, se esperaba un identificador. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -2067,7 +2104,7 @@ public class syntaxAnalyzer {
                 }
                 cont++;
             } else {
-                resultado += "Error, se esperaba un parentesis. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                resultado += "Error, se esperaba un parentesis. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                 return 1;
             }
         } else {
@@ -2085,7 +2122,7 @@ public class syntaxAnalyzer {
                 return 1;
             }
         } else {
-            resultado += "Error, identificador invalido. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, identificador invalido. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -2103,14 +2140,14 @@ public class syntaxAnalyzer {
                     return 1;
                 }
             } else {
-                resultado += "Error, falta un identificador. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                resultado += "Error, falta un identificador. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                 return 1;
             }
 
         } else if (temp.equals("ON")) {
 
         } else {
-            resultado += "Error, no se realizo ninguna accion. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, no se realizo ninguna accion. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -2124,7 +2161,7 @@ public class syntaxAnalyzer {
                 return 1;
             }
         } else {
-            resultado += "Error, identificador invalido. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, identificador invalido. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -2142,14 +2179,14 @@ public class syntaxAnalyzer {
                     return 1;
                 }
             } else {
-                resultado += "Error, falta un identificador. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                resultado += "Error, falta un identificador. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                 return 1;
             }
 
         } else if (temp.equals("PARENTESIS_ABIERTO")) {
 
         } else {
-            resultado += "Error, no se realizo ninguna accion. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, no se realizo ninguna accion. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -2163,7 +2200,7 @@ public class syntaxAnalyzer {
                 return 1;
             }
         } else {
-            resultado += "Error, identificador invalido. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, identificador invalido. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -2181,7 +2218,7 @@ public class syntaxAnalyzer {
                     return 1;
                 }
             } else {
-                resultado += "Error, falta un identificador. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                resultado += "Error, falta un identificador. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                 return 1;
             }
 
@@ -2192,7 +2229,7 @@ public class syntaxAnalyzer {
                 }
             }
         } else {
-            resultado += "Error, no se realizo ninguna accion. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, no se realizo ninguna accion. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -2232,7 +2269,7 @@ public class syntaxAnalyzer {
                 return 1;
             }
         } else {
-            resultado += "Error, se esperaba un campo o una constraint. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, se esperaba un campo o una constraint. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -2314,7 +2351,7 @@ public class syntaxAnalyzer {
                 if (temp.equals("NULL")) {
                     //todo ok
                 } else {
-                    resultado += "Error, falta un NULL. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                    resultado += "Error, falta un NULL. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                     return 1;
                 }
             }
@@ -2343,17 +2380,17 @@ public class syntaxAnalyzer {
                                 return 1;
                             }
                         } else {
-                            resultado += "Error, falta una referencia. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                            resultado += "Error, falta una referencia. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                             return 1;
                         }
 
                     } else {
-                        resultado += "Error, falta un parentesis. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                        resultado += "Error, falta un parentesis. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                         return 1;
                     }
                 }
             } else {
-                resultado += "Error, falta la palabra key. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                resultado += "Error, falta la palabra key. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                 return 1;
             }
         } else if (temp.equals("DEFAULT")) {
@@ -2362,7 +2399,7 @@ public class syntaxAnalyzer {
             if (temp.equals("STRING") || temp.equals("BIT") || temp.equals("INT") || temp.equals("FLOAT")) {
                 //todo ok
             } else {
-                resultado += "Error, tipo de dato erroneo. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                resultado += "Error, tipo de dato erroneo. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                 return 1;
             }
         } else if (temp.equals("IDENTITY")) {
@@ -2383,24 +2420,24 @@ public class syntaxAnalyzer {
                             if (temp.equals("PARENTESIS_CERRADO")) {
                                 cont++;
                             } else {
-                                resultado += "Error, falta un parentesis. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                                resultado += "Error, falta un parentesis. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                                 return 1;
                             }
                         } else {
 
-                            resultado += "Error, se esperaba un numero. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                            resultado += "Error, se esperaba un numero. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                             return 1;
                         }
                     } else {
-                        resultado += "Error, falta una coma . Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                        resultado += "Error, falta una coma . Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                         return 1;
                     }
                 } else {
-                    resultado += "Error, se esperaba un numero. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                    resultado += "Error, se esperaba un numero. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                     return 1;
                 }
             } else {
-                resultado += "Error, falta un parentesis. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                resultado += "Error, falta un parentesis. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                 return 1;
             }
 
@@ -2427,7 +2464,7 @@ public class syntaxAnalyzer {
                 }
                 return 2;
             } else {
-                resultado += "Error, no existe el tipo de constraint. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                resultado += "Error, no existe el tipo de constraint. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                 return 1;
             }
         }
@@ -2444,7 +2481,7 @@ public class syntaxAnalyzer {
                 if (temp.equals("NULL")) {
                     //todo ok
                 } else {
-                    resultado += "Error, falta un NULL. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                    resultado += "Error, falta un NULL. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                     return 1;
                 }
             }
@@ -2474,12 +2511,12 @@ public class syntaxAnalyzer {
                             }
                             cont++;
                         } else {
-                            resultado += "Error, falta una referencia. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                            resultado += "Error, falta una referencia. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                             return 1;
                         }
 
                     } else {
-                        resultado += "Error, falta un parentesis. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                        resultado += "Error, falta un parentesis. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                         return 1;
                     }
                 } else {
@@ -2493,7 +2530,7 @@ public class syntaxAnalyzer {
                     cont++;
                 }
             } else {
-                resultado += "Error, falta la palabra key. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                resultado += "Error, falta la palabra key. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                 return 1;
             }
         } else if (temp.equals("DEFAULT")) {
@@ -2502,7 +2539,7 @@ public class syntaxAnalyzer {
             if (temp.equals("STRING") || temp.equals("BIT") || temp.equals("INT") || temp.equals("FLOAT")) {
                 //todo ok
             } else {
-                resultado += "Error, tipo de dato erroneo. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                resultado += "Error, tipo de dato erroneo. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                 return 1;
             }
         } else if (temp.equals("IDENTITY")) {
@@ -2523,24 +2560,24 @@ public class syntaxAnalyzer {
                             if (temp.equals("PARENTESIS_CERRADO")) {
                                 cont++;
                             } else {
-                                resultado += "Error, falta un parentesis. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                                resultado += "Error, falta un parentesis. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                                 return 1;
                             }
                         } else {
 
-                            resultado += "Error, se esperaba un numero. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                            resultado += "Error, se esperaba un numero. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                             return 1;
                         }
                     } else {
-                        resultado += "Error, falta una coma . Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                        resultado += "Error, falta una coma . Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                         return 1;
                     }
                 } else {
-                    resultado += "Error, se esperaba un numero. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                    resultado += "Error, se esperaba un numero. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                     return 1;
                 }
             } else {
-                resultado += "Error, falta un parentesis. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                resultado += "Error, falta un parentesis. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                 return 1;
             }
 
@@ -2559,7 +2596,7 @@ public class syntaxAnalyzer {
             }
             //no viene ningun constraint
         } else {
-            resultado += "Error, no existe el tipo de constraint. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, no existe el tipo de constraint. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -2579,7 +2616,7 @@ public class syntaxAnalyzer {
                 }
             }
         } else {
-            resultado += "Error, se esperaba un identificador. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, se esperaba un identificador. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -2593,7 +2630,7 @@ public class syntaxAnalyzer {
                 return 1;
             }
         } else {
-            resultado += "Error, nombre de vista incorrecto. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, nombre de vista incorrecto. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -2625,7 +2662,7 @@ public class syntaxAnalyzer {
                 return 1;
             }
         } else {
-            resultado += "Error, falta FROM. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, falta FROM. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -2640,13 +2677,13 @@ public class syntaxAnalyzer {
             if (temp.equals("ID")) {
                 cont--;
             } else {
-                resultado += "Error, falta FROM. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                resultado += "Error, falta FROM. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                 return 1;
             }
         } else if (temp.equals("ID")) {
             cont--;
         } else {
-            resultado += "Error, falta FROM. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, falta FROM. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -2660,7 +2697,7 @@ public class syntaxAnalyzer {
                 return 1;
             }
         } else {
-            resultado += "Error, identificador invalido. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, identificador invalido. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -2677,7 +2714,7 @@ public class syntaxAnalyzer {
                     return 1;
                 }
             } else {
-                resultado += "Error, falta un identificador. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                resultado += "Error, falta un identificador. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                 return 1;
             }
         } else if (temp.equals("SET")) {
@@ -2685,7 +2722,7 @@ public class syntaxAnalyzer {
                 return 1;
             }
         } else {
-            resultado += "Error, no se realizo ninguna accion. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, no se realizo ninguna accion. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -2699,7 +2736,7 @@ public class syntaxAnalyzer {
                 return 1;
             }
         } else {
-            resultado += "Error, identificador invalido. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, identificador invalido. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -2717,7 +2754,7 @@ public class syntaxAnalyzer {
                     return 1;
                 }
             } else {
-                resultado += "Error, falta un identificador. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                resultado += "Error, falta un identificador. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                 return 1;
             }
 
@@ -2726,7 +2763,7 @@ public class syntaxAnalyzer {
                 return 1;
             }
         } else {
-            resultado += "Error, no se realizo ninguna accion. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, no se realizo ninguna accion. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -2774,7 +2811,7 @@ public class syntaxAnalyzer {
             } else if (temp.equals("PUNTO_COMA")) {
                 //todo ok
             } else {
-                resultado += "Error, se esperaba un operador. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                resultado += "Error, se esperaba un operador. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                 return 1;
             }
         } else if (temp.equals("PARENTESIS_ABIERTO")) {
@@ -2800,7 +2837,7 @@ public class syntaxAnalyzer {
             }
 
         } else {
-            resultado += "Error, tipo de dato invalido. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, tipo de dato invalido. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -2831,7 +2868,7 @@ public class syntaxAnalyzer {
             if (temp.equals("FROM")) {
 
             } else {
-                resultado += "Error, falta FROM. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                resultado += "Error, falta FROM. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                 return 1;
             }
         } else if (temp.equals("DISTINCT") || temp.equals("ALL") || temp.equals("TOP")) {
@@ -2851,7 +2888,7 @@ public class syntaxAnalyzer {
                 return 1;
             }
         } else {
-            resultado += "Error, se esperaba una seleccion de columnas. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, se esperaba una seleccion de columnas. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -2872,7 +2909,7 @@ public class syntaxAnalyzer {
                 return 1;
             }
         } else {
-            resultado += "Error, tipo de columna incorrecta. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, tipo de columna incorrecta. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -2909,11 +2946,11 @@ public class syntaxAnalyzer {
                         } else if (temp.equals("FROM")) {
 
                         } else {
-                            resultado += "Error, falta una coma. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                            resultado += "Error, falta una coma. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                             return 1;
                         }
                     } else {
-                        resultado += "Error, falta una coma. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                        resultado += "Error, falta una coma. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                         return 1;
                     }
                 } else if (temp.equals("FROM")) {
@@ -2934,11 +2971,11 @@ public class syntaxAnalyzer {
                     } else if (temp.equals("FROM")) {
 
                     } else {
-                        resultado += "Error, falta una coma. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                        resultado += "Error, falta una coma. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                         return 1;
                     }
                 } else {
-                    resultado += "Error, falta una coma. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                    resultado += "Error, falta una coma. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                     return 1;
                 }
             } else if (temp.equals("FROM")) {
@@ -2971,11 +3008,11 @@ public class syntaxAnalyzer {
                         } else if (temp.equals("FROM")) {
 
                         } else {
-                            resultado += "Error, falta una coma. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                            resultado += "Error, falta una coma. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                             return 1;
                         }
                     } else {
-                        resultado += "Error, falta una coma. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                        resultado += "Error, falta una coma. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                         return 1;
                     }
                 } else if (temp.equals("FROM")) {
@@ -2985,12 +3022,12 @@ public class syntaxAnalyzer {
                         return 1;
                     }
                 } else {
-                    resultado += "Error, falta una coma. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                    resultado += "Error, falta una coma. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                     return 1;
                 }
 
             } else {
-                resultado += "Error, se esperaba un operador. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                resultado += "Error, se esperaba un operador. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                 return 1;
             }
         } else if (temp.equals("PARENTESIS_ABIERTO")) {
@@ -3021,11 +3058,11 @@ public class syntaxAnalyzer {
                         } else if (temp.equals("FROM")) {
 
                         } else {
-                            resultado += "Error, falta una coma. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                            resultado += "Error, falta una coma. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                             return 1;
                         }
                     } else {
-                        resultado += "Error, falta una coma. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                        resultado += "Error, falta una coma. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                         return 1;
                     }
                 } else if (temp.equals("FROM")) {
@@ -3036,7 +3073,7 @@ public class syntaxAnalyzer {
             }
 
         } else {
-            resultado += "Error, tipo de dato invalido. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, tipo de dato invalido. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -3053,7 +3090,7 @@ public class syntaxAnalyzer {
                     return 1;
                 }
             } else {
-                resultado += "Error, falta un identificador. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                resultado += "Error, falta un identificador. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                 return 1;
             }
 
@@ -3074,17 +3111,17 @@ public class syntaxAnalyzer {
                 } else if (temp.equals("FROM")) {
 
                 } else {
-                    resultado += "Error, falta una coma. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                    resultado += "Error, falta una coma. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                     return 1;
                 }
             } else {
-                resultado += "Error, falta una coma. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                resultado += "Error, falta una coma. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                 return 1;
             }
         } else if (temp.equals("FROM")) {
 
         } else {
-            resultado += "Error, falta un punto o un identificador. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, falta un punto o un identificador. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -3117,21 +3154,21 @@ public class syntaxAnalyzer {
                     } else if (temp.equals("FROM")) {
 
                     } else {
-                        resultado += "Error, falta una coma. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                        resultado += "Error, falta una coma. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                         return 1;
                     }
                 } else {
-                    resultado += "Error, falta una coma. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                    resultado += "Error, falta una coma. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                     return 1;
                 }
             } else if (temp.equals("FROM")) {
 
             } else {
-                resultado += "Error, falta una coma. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                resultado += "Error, falta una coma. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                 return 1;
             }
         } else {
-            resultado += "Error, se necesita un parentesis. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, se necesita un parentesis. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -3146,7 +3183,7 @@ public class syntaxAnalyzer {
             if (temp.equals("PARENTESIS_CERRADO")) {
                 //todo ok
             } else {
-                resultado += "Error, falta un parentesis. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                resultado += "Error, falta un parentesis. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                 return 1;
             }
         } else if (temp.equals("DISTINCT")) {
@@ -3158,7 +3195,7 @@ public class syntaxAnalyzer {
                 return 1;
             }
         } else {
-            resultado += "Error, no se puede operar con la funcion de agregacion. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, no se puede operar con la funcion de agregacion. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -3172,7 +3209,7 @@ public class syntaxAnalyzer {
                 return 1;
             }
         } else {
-            resultado += "Error, se esperaba un identificador. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, se esperaba un identificador. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -3186,7 +3223,7 @@ public class syntaxAnalyzer {
                 return 1;
             }
         } else {
-            resultado += "Error, identificador invalido. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, identificador invalido. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -3204,7 +3241,7 @@ public class syntaxAnalyzer {
                     return 1;
                 }
             } else {
-                resultado += "Error, falta un identificador. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                resultado += "Error, falta un identificador. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                 return 1;
             }
         } else if (temp.equals("AS")) {
@@ -3215,7 +3252,7 @@ public class syntaxAnalyzer {
                     return 1;
                 }
             } else {
-                resultado += "Error, falta un identificador. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                resultado += "Error, falta un identificador. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                 return 1;
             }
         } else if (temp.equals("ID")) {
@@ -3244,7 +3281,7 @@ public class syntaxAnalyzer {
                     return 1;
                 }
             } else {
-                resultado += "Error, no se realizo ninguna accion. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                resultado += "Error, no se realizo ninguna accion. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                 return 1;
             }
         } else if (temp.equals("COMA")) {
@@ -3285,7 +3322,7 @@ public class syntaxAnalyzer {
                 return 1;
             }
         } else {
-            resultado += "Error, no se realizo ninguna accion. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, no se realizo ninguna accion. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -3304,7 +3341,7 @@ public class syntaxAnalyzer {
                 return 1;
             }
         } else {
-            resultado += "Error, falta la palabra JOIN. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, falta la palabra JOIN. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -3318,7 +3355,7 @@ public class syntaxAnalyzer {
                 return 1;
             }
         } else {
-            resultado += "Error, falta la palabra JOIN. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, falta la palabra JOIN. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -3332,7 +3369,7 @@ public class syntaxAnalyzer {
                 return 1;
             }
         } else {
-            resultado += "Error, identificador invalido. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, identificador invalido. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -3349,7 +3386,7 @@ public class syntaxAnalyzer {
                     return 1;
                 }
             } else {
-                resultado += "Error, falta un identificador. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                resultado += "Error, falta un identificador. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                 return 1;
             }
         } else if (temp.equals("AS")) {
@@ -3360,7 +3397,7 @@ public class syntaxAnalyzer {
                     return 1;
                 }
             } else {
-                resultado += "Error, falta un identificador. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                resultado += "Error, falta un identificador. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                 return 1;
             }
         } else if (temp.equals("ID")) {
@@ -3373,7 +3410,7 @@ public class syntaxAnalyzer {
             }
 
         } else {
-            resultado += "Error, la palabra ON. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, la palabra ON. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -3387,7 +3424,7 @@ public class syntaxAnalyzer {
                 return 1;
             }
         } else {
-            resultado += "Error, identificador invalido. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, identificador invalido. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -3405,7 +3442,7 @@ public class syntaxAnalyzer {
                     return 1;
                 }
             } else {
-                resultado += "Error, falta un identificador. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                resultado += "Error, falta un identificador. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                 return 1;
             }
 
@@ -3414,7 +3451,7 @@ public class syntaxAnalyzer {
                 return 1;
             }
         } else {
-            resultado += "Error, no se realizo ninguna accion. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, no se realizo ninguna accion. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -3428,7 +3465,7 @@ public class syntaxAnalyzer {
                 return 1;
             }
         } else {
-            resultado += "Error, identificador invalido. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, identificador invalido. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -3446,7 +3483,7 @@ public class syntaxAnalyzer {
                     return 1;
                 }
             } else {
-                resultado += "Error, falta un identificador. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                resultado += "Error, falta un identificador. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                 return 1;
             }
         } else if (temp.equals("INNER") || temp.equals("RIGHT") || temp.equals("LEFT") || temp.equals("FULL") || temp.equals("JOIN")) {
@@ -3483,7 +3520,7 @@ public class syntaxAnalyzer {
                 return 1;
             }
         } else {
-            resultado += "Error, no se realizo ninguna accion. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, no se realizo ninguna accion. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -3505,7 +3542,7 @@ public class syntaxAnalyzer {
                 return 1;
             }
         } else {
-            resultado += "Error, se esperaba un identificador. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, se esperaba un identificador. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -3540,7 +3577,7 @@ public class syntaxAnalyzer {
                 return 1;
             }
         } else {
-            resultado += "Error, operador logico no valido. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, operador logico no valido. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -3554,7 +3591,7 @@ public class syntaxAnalyzer {
                 return 1;
             }
         } else {
-            resultado += "Error, falta BY. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, falta BY. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -3568,7 +3605,7 @@ public class syntaxAnalyzer {
                 return 1;
             }
         } else {
-            resultado += "Error, identificador invalido. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, identificador invalido. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -3585,7 +3622,7 @@ public class syntaxAnalyzer {
                     return 1;
                 }
             } else {
-                resultado += "Error, falta un identificador. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                resultado += "Error, falta un identificador. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                 return 1;
             }
         } else if (temp.equals("COMA")) {
@@ -3603,7 +3640,7 @@ public class syntaxAnalyzer {
                 return 1;
             }
         } else {
-            resultado += "Error, no se realizo ninguna accion. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, no se realizo ninguna accion. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -3658,7 +3695,7 @@ public class syntaxAnalyzer {
             }
 
         } else {
-            resultado += "Error, se esperaba una funcion de agregacion. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, se esperaba una funcion de agregacion. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -3685,7 +3722,7 @@ public class syntaxAnalyzer {
                 return 1;
             }
         } else {
-            resultado += "Error, operador logico no valido. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, operador logico no valido. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -3699,7 +3736,7 @@ public class syntaxAnalyzer {
                 return 1;
             }
         } else {
-            resultado += "Error, falta BY. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, falta BY. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -3724,7 +3761,7 @@ public class syntaxAnalyzer {
                 }
             }
         } else {
-            resultado += "Error, identificador invalido. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, identificador invalido. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -3741,7 +3778,7 @@ public class syntaxAnalyzer {
                     return 1;
                 }
             } else {
-                resultado += "Error, falta un identificador. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                resultado += "Error, falta un identificador. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                 return 1;
             }
         } else if (temp.equals("COMA")) {
@@ -3758,13 +3795,13 @@ public class syntaxAnalyzer {
             } else if (temp.equals("PUNTO_COMA")) {
                 //todo ok
             } else {
-                resultado += "Error, falta una coma. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+                resultado += "Error, falta una coma. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                 return 1;
             }
         } else if (temp.equals("PUNTO_COMA")) {
             //todo ok
         } else {
-            resultado += "Error, no se realizo ninguna accion. Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, no se realizo ninguna accion. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;
@@ -3776,7 +3813,7 @@ public class syntaxAnalyzer {
         if (temp.equals("")) {
 
         } else {
-            resultado += "Error, . Linea: " + detalles.get(cont).fila + " Columna: " + detalles.get(cont).columna + "\n";
+            resultado += "Error, . Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
             return 1;
         }
         return 2;

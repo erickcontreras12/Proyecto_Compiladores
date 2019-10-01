@@ -29,7 +29,7 @@ public class minisql extends javax.swing.JFrame {
     File file;
     FileManager manager = new FileManager();
     ArrayList<String> tokens = new ArrayList<>();
-    ArrayList<DetalleToken> detalle_token= new ArrayList<>();
+    ArrayList<DetalleToken> detalle_token = new ArrayList<>();
     syntaxAnalyzer analizador;
 
     /**
@@ -182,9 +182,12 @@ public class minisql extends javax.swing.JFrame {
             JOptionPane.showMessageDialog(null, "Seleccione un archivo primero");
         } else {
             analizador = new syntaxAnalyzer(tokens, detalle_token);
-            String result = analizador.makeAnalysis();
-            jTAResult.setText(result);
-            
+            String result = analizador.makeTextAnalysis();
+            if (result.equals("")) {
+                jTAResult.setText("Todo el archivo esta correcto!");
+            } else {
+                jTAResult.setText(result);
+            }
         }
     }//GEN-LAST:event_jBtnAnalyzeActionPerformed
 
@@ -219,9 +222,13 @@ public class minisql extends javax.swing.JFrame {
             switch (token) {
                 case ERROR:
                     resultado += "Error caracter invalido, " + lexer.lexeme + "  Line: " + (lexer.getLine() + 1) + "   PrimeraColumna: " + lexer.getColumn() + "   UltimaColumna: " + (lexer.getColumn() + lexer.lexeme.length()) + "\n";
+                    this.tokens.add(token.name());
+                    this.detalle_token.add(new DetalleToken(lexer.getColumn(), lexer.getLine() + 1, token.name()));
                     break;
                 case ERROR_F:
                     resultado += "Error float invalido, " + lexer.lexeme + "  Line: " + (lexer.getLine() + 1) + "   PrimeraColumna: " + lexer.getColumn() + "   UltimaColumna: " + (lexer.getColumn() + lexer.lexeme.length()) + "\n";
+                    this.tokens.add(token.name());
+                    this.detalle_token.add(new DetalleToken(lexer.getColumn(), lexer.getLine() + 1, token.name()));
                     break;
                 case ID:
                     String string = "";
@@ -232,7 +239,7 @@ public class minisql extends javax.swing.JFrame {
                         resultado += "TOKEN: " + token + " " + lexer.lexeme + "  Line: " + (lexer.getLine() + 1) + "   FirstCol: " + lexer.getColumn() + "   LastCol: " + (lexer.getColumn() + lexer.lexeme.length()) + "\n";
                     }
                     this.tokens.add(token.name());
-                    this.detalle_token.add(new DetalleToken(lexer.getColumn(),lexer.getLine() + 1,token.name()));
+                    this.detalle_token.add(new DetalleToken(lexer.getColumn(), lexer.getLine() + 1, token.name()));
                     break;
                 case COMENTARIO_M:
                     resultado += "Error, comentario multilinea " + token + "  Line: " + (lexer.getLine() + 1) + "   FirstCol: " + lexer.getColumn() + "   LastCol: " + (lexer.getColumn() + lexer.lexeme.length()) + "\n";
@@ -251,7 +258,7 @@ public class minisql extends javax.swing.JFrame {
                 default:
                     resultado += "TOKEN: " + token + "  Line: " + (lexer.getLine() + 1) + "   FirstCol: " + lexer.getColumn() + "   LastCol: " + (lexer.getColumn() + lexer.lexeme.length()) + "\n";
                     this.tokens.add(token.name());
-                    this.detalle_token.add(new DetalleToken(lexer.getColumn(),lexer.getLine() + 1,token.name()));
+                    this.detalle_token.add(new DetalleToken(lexer.getColumn(), lexer.getLine() + 1, token.name()));
                     break;
             }
 
