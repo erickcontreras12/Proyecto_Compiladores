@@ -146,7 +146,7 @@ public class syntaxAnalyzer {
                 return 2;
             }
 
-            if (temp.equals("PUNTO_COMA")) {
+            if (temp.equals("PUNTO_COMA") || temp.equals("GO")) {
                 return 2;
             }
             if (B2() == 1) {
@@ -156,7 +156,7 @@ public class syntaxAnalyzer {
             if (nombre1() == 1) {
                 return 1;
             }
-            if (temp.equals("PUNTO_COMA")) {
+            if (temp.equals("PUNTO_COMA") || temp.equals("GO")) {
                 return 2;
             }
             if (B2() == 1) {
@@ -388,7 +388,7 @@ public class syntaxAnalyzer {
             if (D2() == 1) {
                 return 1;
             }
-        } else if (temp.equals("PUNTO_COMA")) {
+        } else if (temp.equals("PUNTO_COMA") || temp.equals("GO")) {
 
         } else {
             resultado += "Error, se esperaba una coma. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
@@ -881,7 +881,7 @@ public class syntaxAnalyzer {
             if (objeto_nombreKEY() == 1) {
                 return 1;
             }
-        } else if (temp.equals("PARENTESIS_CERRADO") || temp.equals("PUNTO_COMA")) {
+        } else if (temp.equals("PARENTESIS_CERRADO") || temp.equals("PUNTO_COMA") || temp.equals("GO")) {
 
         } else {
             resultado += "Error, no se realizo ninguna accion. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
@@ -1029,7 +1029,7 @@ public class syntaxAnalyzer {
                 return 1;
             }
 
-        } else if (temp.equals("PUNTO_COMA")) {
+        } else if (temp.equals("PUNTO_COMA") || temp.equals("GO")) {
             //Viene sin constraint, entonces le resto 1 para que luego agarre el punto y coma arriba
             cont--;
         } else {
@@ -1074,7 +1074,7 @@ public class syntaxAnalyzer {
             if (columna() == 1) {
                 return 1;
             }
-        } else if (temp.equals("PUNTO_COMA")) {
+        } else if (temp.equals("PUNTO_COMA") || temp.equals("GO")) {
 
         } else {
             return 1;
@@ -1133,7 +1133,7 @@ public class syntaxAnalyzer {
                 return 1;
             }
 
-        } else if (temp.equals("PUNTO_COMA")) {
+        } else if (temp.equals("PUNTO_COMA") || temp.equals("GO")) {
 
         } else {
             resultado += "Error, no se realizo ninguna accion. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
@@ -1172,7 +1172,7 @@ public class syntaxAnalyzer {
                 return 1;
             }
 
-        } else if (temp.equals("PUNTO_COMA") || temp.equals("COMA")) {
+        } else if (temp.equals("PUNTO_COMA") || temp.equals("GO") || temp.equals("COMA")) {
             if (temp.equals("COMA")) {
                 if (objeto_nombreDPC() == 1) {
                     return 1;
@@ -1322,8 +1322,8 @@ public class syntaxAnalyzer {
         } else {
             cont++;
             temp = Tokens.get(cont);
-            if (temp.equals("PARENTESIS_CERRADO") || temp.equals("PUNTO_COMA")) {
-                if (temp.equals("PUNTO_COMA")) {
+            if (temp.equals("PARENTESIS_CERRADO") || temp.equals("PUNTO_COMA") || temp.equals("GO")) {
+                if (temp.equals("PUNTO_COMA") || temp.equals("GO")) {
                     cont--;
                 }
                 return 2;
@@ -1527,7 +1527,7 @@ public class syntaxAnalyzer {
             if (set_item() == 1) {
                 return 1;
             }
-        } else if (temp.equals("PUNTO_COMA")) {
+        } else if (temp.equals("PUNTO_COMA") || temp.equals("GO")) {
 
         } else {
             resultado += "Error, se esperaba una coma. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
@@ -1650,7 +1650,7 @@ public class syntaxAnalyzer {
                 resultado += "Error, se esperaba un identificador. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                 return 1;
             }
-        } else if (temp.equals("PUNTO_COMA")) {
+        } else if (temp.equals("PUNTO_COMA") || temp.equals("GO")) {
 
         } else {
             resultado += "Error, se esperaba una coma. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
@@ -1740,7 +1740,7 @@ public class syntaxAnalyzer {
                 return 1;
             }
 
-        } else if (temp.equals("PUNTO_COMA") || temp.equals("COMA")) {
+        } else if (temp.equals("PUNTO_COMA") || temp.equals("GO") || temp.equals("COMA")) {
             if (temp.equals("COMA")) {
                 if (objeto_nombreDPC2() == 1) {
                     return 1;
@@ -1874,7 +1874,7 @@ public class syntaxAnalyzer {
             if (condicionales() == 1) {
                 return 1;
             }
-        } else if (temp.equals("PUNTO_COMA")) {
+        } else if (temp.equals("PUNTO_COMA") || temp.equals("GO")) {
             //todo ok
         } else {
             resultado += "Error, no se realizo ninguna accion. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
@@ -1936,7 +1936,7 @@ public class syntaxAnalyzer {
             if (condicionales() == 1) {
                 return 1;
             }
-        } else if (temp.equals("PUNTO_COMA")) {
+        } else if (temp.equals("PUNTO_COMA") || temp.equals("GO")) {
             //todo ok
         } else {
             resultado += "Error, operador logico no valido. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
@@ -2093,7 +2093,7 @@ public class syntaxAnalyzer {
 
         cont++;
         temp = Tokens.get(cont);
-        if (temp.equals("PUNTO_COMA")) {
+        if (temp.equals("PUNTO_COMA") || temp.equals("GO")) {
             return 2;
         } else if (temp.equals("INCLUDE")) {
             cont++;
@@ -2327,7 +2327,9 @@ public class syntaxAnalyzer {
         temp = Tokens.get(cont);
         if (temp.equals("PARENTESIS_CERRADO") || temp.equals("COMA")) {
             return 2;
-        } else {
+        }else if (temp.equals("PUNTO_COMA") || temp.equals("GO")) {
+            return 2;
+        }  else {
             cont++;
             temp = Tokens.get(cont);
             if (temp.equals("PARENTESIS_CERRADO") || temp.equals("COMA")) {
@@ -2808,7 +2810,7 @@ public class syntaxAnalyzer {
                 if (objeto_nombreCU() == 1) {
                     return 1;
                 }
-            } else if (temp.equals("PUNTO_COMA")) {
+            } else if (temp.equals("PUNTO_COMA") || temp.equals("GO")) {
                 //todo ok
             } else {
                 resultado += "Error, se esperaba un operador. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
@@ -3262,7 +3264,7 @@ public class syntaxAnalyzer {
                 if (objeto_nombreOT() == 1) {
                     return 1;
                 }
-            } else if (temp.equals("PUNTO_COMA")) {
+            } else if (temp.equals("PUNTO_COMA") || temp.equals("GO")) {
 
             } else if (temp.equals("WHERE")) {
                 if (condicionales2() == 1) {
@@ -3288,7 +3290,7 @@ public class syntaxAnalyzer {
             if (objeto_nombreOT() == 1) {
                 return 1;
             }
-        } else if (temp.equals("PUNTO_COMA")) {
+        } else if (temp.equals("PUNTO_COMA") || temp.equals("GO")) {
             //todo ok
         } else if (temp.equals("INNER") || temp.equals("RIGHT") || temp.equals("LEFT") || temp.equals("FULL") || temp.equals("JOIN")) {
             if (temp.equals("INNER")) {
@@ -3501,7 +3503,7 @@ public class syntaxAnalyzer {
                     return 1;
                 }
             }
-        } else if (temp.equals("PUNTO_COMA")) {
+        } else if (temp.equals("PUNTO_COMA") || temp.equals("GO")) {
             //todo ok
         } else if (temp.equals("WHERE")) {
             if (condicionales2() == 1) {
@@ -3562,7 +3564,7 @@ public class syntaxAnalyzer {
             if (condicionales2() == 1) {
                 return 1;
             }
-        } else if (temp.equals("PUNTO_COMA")) {
+        } else if (temp.equals("PUNTO_COMA") || temp.equals("GO")) {
             //todo ok
         } else if (temp.equals("GROUP")) {
             if (agrupado() == 1) {
@@ -3629,7 +3631,7 @@ public class syntaxAnalyzer {
             if (objeto_nombreG() == 1) {
                 return 1;
             }
-        } else if (temp.equals("PUNTO_COMA")) {
+        } else if (temp.equals("PUNTO_COMA") || temp.equals("GO")) {
             //todo ok
         } else if (temp.equals("HAVING")) {
             if (teniendo() == 1) {
@@ -3715,7 +3717,7 @@ public class syntaxAnalyzer {
             if (teniendo() == 1) {
                 return 1;
             }
-        } else if (temp.equals("PUNTO_COMA")) {
+        } else if (temp.equals("PUNTO_COMA") || temp.equals("GO")) {
             //todo ok
         } else if (temp.equals("ORDER")) {
             if (ordenado() == 1) {
@@ -3792,13 +3794,13 @@ public class syntaxAnalyzer {
                 if (objeto_nombreOB() == 1) {
                     return 1;
                 }
-            } else if (temp.equals("PUNTO_COMA")) {
+            } else if (temp.equals("PUNTO_COMA") || temp.equals("GO")) {
                 //todo ok
             } else {
                 resultado += "Error, falta una coma. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
                 return 1;
             }
-        } else if (temp.equals("PUNTO_COMA")) {
+        } else if (temp.equals("PUNTO_COMA") || temp.equals("GO")) {
             //todo ok
         } else {
             resultado += "Error, no se realizo ninguna accion. Linea: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).fila + " Columna: " + detalles.get(cont_general - (Tokens.size() - cont) + 1).columna + "\n";
