@@ -128,7 +128,9 @@ terminal BIT, INT, FLOAT, STRING, PALABRA_RESERVADA, ID, ERROR, ERROR_F, MAS, ME
     FORWARD_ONLY, KEYSET, FAST_FORWARD, DYNAMIC, READ_ONLY, SCROLL_LOCKS, SCROLL, OPTIMISTIC, TYPE_WARNING, INPUT, LOCAL, GLOBAL, COLLATE , INMEDIATE;
 
 non terminal Start, general1, general, Stmt, EndStmt, StmtDML, StmtDDL, StmtTCL, StmtTSQL, select, insert, update, delete, create, alter, truncate, drop, cursor, obj_n, obj_n1, obj_n2, tipo_dato,
-    aritmetica, aritmetica1, parte, parte1, parte2, list_table, list_table1
+    aritmetica, aritmetica1, parte, parte1, parte2, list_table, list_table1, opcion_select, seleccion, expresion, columna, columna1, columna2, funciones, valor, puede, alias_columna, origen, 
+    origen1, alias_tabla, opcion_alias, joins, tipo_join, tipo_join1, joins1, condicionales, condicionales1, otra_condicion, operadores_logicos, operadores, agrupado, agrupado1, teniendo, teniendo1,
+    teniendo2, orden, orden1, tipo_orden, num 
     ;
 
 start with Start;
@@ -142,11 +144,13 @@ StmtDDL ::= create | alter | truncate | drop ;
 StmtTSQL ::= cursor ;
 EndStmt ::= GO | PUNTO_COMA | PUNTO_COMA GO | GO PUNTO_COMA | PUNTO_COMA GO PUNTO_COMA  ;
 
+num ::= INT | BIT ;
+
 obj_n ::= ID obj_n1 ;
 obj_n1 ::= PUNTO ID obj_n2 | /*epsilon*/ ;
 obj_n2 ::= PUNTO ID | /*epsilon*/ ;
 
-tipo_dato ::= STRING | BIT | INT | FLOAT ;
+tipo_dato ::= STRING | num | FLOAT ;
 
 aritmetica ::= parte aritmetica1 ; 
 aritmetica1 ::= MAS parte | MENOS parte | /*epsilon*/ ;
@@ -157,3 +161,49 @@ parte2 ::= PARENTESIS_ABIERTO aritmetica PARENTESIS_CERRADO | INT | FLOAT | obj_
 truncate ::= TRUNCATE TABLE list_table ;
 list_table ::= obj_n list_table1 ;
 list_table ::= COMA list_table | /*epsilon*/ ;
+
+
+/*select */
+select ::=  SELECT opcion_select FROM origen joins condicionales agrupado teniendo orden ;
+
+opcion_select ::=  seleccion columna ;
+seleccion ::=  DISTINCT | ALL | TOP expresion |  /*epsilon*/ ;
+expresion ::=  num | PARENTESIS_ABIERTO num PARENTESIS_CERRADO ;
+columna ::=  columna1 alias_columna columna2 ;
+columna1 ::=  funciones | aritmetica | obj_n IGUAL aritmetica | MULT ;
+columna2 ::=  COMA columna |  /*epsilon*/  ;
+
+funciones ::=  SUM PARENTESIS_ABIERTO valor PARENTESIS_CERRADO | AVG PARENTESIS_ABIERTO valor PARENTESIS_CERRADO | 
+            COUNT PARENTESIS_ABIERTO valor PARENTESIS_CERRADO | MIN PARENTESIS_ABIERTO valor PARENTESIS_CERRADO |
+             MAX PARENTESIS_ABIERTO valor PARENTESIS_CERRADO ;
+valor ::=  num | MULT | puede obj_n ;
+puede ::=  DISTINCT |  /*epsilon*/  ;
+alias_columna ::=  AS opcion_alias |  /*epsilon*/ ;
+
+
+origen ::=  obj_n alias_tabla origen1 ;
+origen1 ::=  COMA origen |  /*epsilon*/ ; 
+alias_tabla ::=  AS opcion_alias | ID |  /*epsilon*/  ;
+opcion_alias ::=  STRING | ID ;
+
+joins ::=  tipo_join JOIN obj_n alias_tabla ON obj_n IGUAL obj_n joins1 | /*epsilon*/ ;
+tipo_join ::=  INNER | LEFT tipo_join1 | RIGHT tipo_join1 | FULL tipo_join1 |  /*epsilon*/ ;
+tipo_join1 ::=  OUTER |  /*epsilon*/  ;
+joins1 ::=  joins ;
+
+condicionales ::=  WHERE ID operadores tipo_dato condicionales1 | /*epsilon*/ ;
+condicionales1 ::=  operadores_logicos otra_condicion |  /*epsilon*/  ;
+otra_condicion ::=  ID operadores tipo_dato condicionales1 ;
+operadores_logicos ::=  AND | OR | AND_O | OR_O ;
+operadores ::=  MENOR | MAYOR | MENOR_O_IGUAL | MAYOR_O_IGUAL | DIFERENTE | IGUAL_A | LIKE | BETWEEN num AND num ;
+
+agrupado ::=  GROUP BY obj_n agrupado1 |  /*epsilon*/ ;
+agrupado1 ::=  COMA obj_n agrupado1 |  /*epsilon*/ ;
+
+teniendo ::=  HAVING teniendo1 |  /*epsilon*/ ;
+teniendo1 ::=  funciones operadores tipo_dato teniendo2 ;
+teniendo2 ::=  operadores_logicos teniendo1 |  /*epsilon*/ ; 
+
+orden ::=  ORDER BY obj_n tipo_orden orden1 |  /*epsilon*/   ;
+orden1 ::=  COMA obj_n orden1 |  /*epsilon*/ ;
+tipo_orden ::=  ASC | DESC |  /*epsilon*/ ;
