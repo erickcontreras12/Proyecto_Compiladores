@@ -7,11 +7,11 @@ parser code
     private Symbol s;
 
     public void syntax_error(Symbol s){
-        this.s = s
+        this.s = s;
     }
 
-    public Symbol getS{
-        return this.s
+    public Symbol getS(){
+        return this.s;
     }
 :};
 
@@ -26,7 +26,7 @@ terminal BIT, INT, FLOAT, STRING, PALABRA_RESERVADA, ID, ERROR, ERROR_F, MAS, ME
     DECLARE, VARYING, CURSOR, TO, RECOMPILE, ENCRYPTION, SELF, OWNER, CALLER, OUT, OUTPUT, READONLY, REPLICATION, OFF, SCHEMABINDING, INLINE, CALLED, MARK, STATIC,
     FORWARD_ONLY, KEYSET, FAST_FORWARD, DYNAMIC, READ_ONLY, SCROLL_LOCKS, SCROLL, OPTIMISTIC, TYPE_WARNING, INPUT, LOCAL, GLOBAL, COLLATE , INMEDIATE;
 
-non terminal Start, general, Stmt, EndStmt, StmtDML, StmtDDL, StmtTCL, StmtTSQL, select, insert, update, delete, create, alter, truncate, drop, obj_n, obj_n1, obj_2, tipo_datp,
+non terminal Start, general, Stmt, EndStmt, StmtDML, StmtDDL, StmtTCL, StmtTSQL, select, insert, update, delete, create, alter, truncate, drop, cursor, obj_n, obj_n1, obj_n2, tipo_dato,
     aritmetica, aritmetica1, parte, parte1, parte2
     ;
 
