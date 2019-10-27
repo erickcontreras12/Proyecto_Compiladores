@@ -1,18 +1,119 @@
 package Classes;
 
 import java_cup.runtime.Symbol;
+import java.util.List;
+import java.util.LinkedList;
+import java.util.ArrayList;
+import java_cup.runtime.virtual_parse_stack;
+import java.lang.reflect.Field;
 
 parser code
 {:
     private Symbol s;
+    private String errors_list = ""; 
+
+    public String getErrorString(){
+        return errors_list;
+    }
+
+    public String symbl_name_from_id(int id){
+	Field[] fields = getSymbolContainer().getFields();
+	for(Field f : fields){
+		try {
+                    if (f.getInt(null)==id)
+			  return f.getName();
+		} catch (IllegalArgumentException e) {
+			//e.printStackTrace();
+		} catch (IllegalAccessException ex) { 
+                        //e.printStackTrace();
+                } 
+	  }
+	return "invalid symbol id";
+    }
 
     public void syntax_error(Symbol s){
-        this.s = s;
+        this.s=s; 
+        List<Integer> ids = expected_token_ids();
+	LinkedList<String> list = new LinkedList<String>();
+	for (Integer expected : ids){
+            list.add(symbl_name_from_id(expected));
+            list.add("\n");
+        }
+        errors_list += "Line: " + (s.right + 1) + " and column: " + (s.left + 1) + ", '" + s.value +"', recuperable error: missing symbol " + list + "\n";
+        System.out.println("Error R de sintaxis: "+ s.value +" Columna "+(s.left+1)+" linea "+(s.right+1)+"tokens esperados"+list+"\n\n" );  
     }
 
-    public Symbol getS(){
-        return this.s;
+    public List<Integer> expected_token_ids() {
+        List<Integer> ret = new LinkedList<Integer>();
+	int parse_state = ((Symbol)stack.peek()).parse_state ;
+	short[] row = action_tab[parse_state];
+	for (int i = 0; i<row.length; i+=2){
+            if (row[i]==-1) continue;
+            if (!validate_expected_symbol(row[i])) continue;
+            ret.add(new Integer(row[i]));
+	}
+	return ret;
     }
+
+    protected static final int _error_sync_size(){
+        return 1;
+    }
+
+    private boolean validate_expected_symbol(int id){
+	short lhs,rhs_size;
+	int act;
+	try {
+            virtual_parse_stack vstack = new virtual_parse_stack(stack);
+            /* parse until we fail or get past the lookahead input */
+            for (;;)
+            {
+                /* look up the action from the current state (on top of stack) */
+                act = get_action(vstack.top(), id);
+                
+                /* if its an error, we fail */
+		if (act == 0) return false;
+
+        	/* > 0 encodes a shift */
+		if (act > 0){
+                    /* push the new state on the stack */
+                    vstack.push(act-1);
+
+        	    /* advance simulated input, if we run off the end, we are done */
+                    if (!advance_lookahead()) return true;
+                }
+                /* < 0 encodes a reduce */
+		else
+		{
+                    /* if this is a reduce with the start production we are done */
+                    if ((-act)-1 == start_production())  return true;
+
+                    /* get the lhs Symbol and the rhs size */
+                    lhs = production_tab[(-act)-1][0];
+                    rhs_size = production_tab[(-act)-1][1];
+                    /* pop handle off the stack */
+                    for (int i = 0; i < rhs_size; i++) vstack.pop();
+                    vstack.push(get_reduce(vstack.top(), lhs));
+                }
+            }
+	} catch (Exception e) {
+            e.printStackTrace();
+	}
+	return true;
+    }
+
+    public void unrecovered_syntax_error(Symbol s) throws java.lang.Exception{ 
+        List<Integer> ids = new LinkedList<>();
+        ids=expected_token_ids();
+	LinkedList<String> list = new LinkedList<String>();
+	for (Integer expected : ids){
+            list.add(symbl_name_from_id(expected));
+            list.add("\n");
+        }
+
+        errors_list += "Line: " + (s.right + 1) + " and column: " + (s.left + 1) + ", '" + s.value +"', Non recuperable error: missing symbol " + list + "\n";
+        System.out.println("Error NR de sintaxis: "+ s.value +" Columna "+(s.left+1)+" linea "+(s.right+1)+"tokens esperados"+list+"\n\n" );   
+    }
+
 :};
 
 terminal BIT, INT, FLOAT, STRING, PALABRA_RESERVADA, ID, ERROR, ERROR_F, MAS, MENOS, MULT, DIV, RES, MENOR, MENOR_O_IGUAL, MAYOR, MAYOR_O_IGUAL, IGUAL, IGUAL_A, DIFERENTE, 
@@ -26,14 +127,15 @@ terminal BIT, INT, FLOAT, STRING, PALABRA_RESERVADA, ID, ERROR, ERROR_F, MAS, ME
     DECLARE, VARYING, CURSOR, TO, RECOMPILE, ENCRYPTION, SELF, OWNER, CALLER, OUT, OUTPUT, READONLY, REPLICATION, OFF, SCHEMABINDING, INLINE, CALLED, MARK, STATIC,
     FORWARD_ONLY, KEYSET, FAST_FORWARD, DYNAMIC, READ_ONLY, SCROLL_LOCKS, SCROLL, OPTIMISTIC, TYPE_WARNING, INPUT, LOCAL, GLOBAL, COLLATE , INMEDIATE;
 
-non terminal Start, general, Stmt, EndStmt, StmtDML, StmtDDL, StmtTCL, StmtTSQL, select, insert, update, delete, create, alter, truncate, drop, cursor, obj_n, obj_n1, obj_n2, tipo_dato,
-    aritmetica, aritmetica1, parte, parte1, parte2
+non terminal Start, general1, general, Stmt, EndStmt, StmtDML, StmtDDL, StmtTCL, StmtTSQL, select, insert, update, delete, create, alter, truncate, drop, cursor, obj_n, obj_n1, obj_n2, tipo_dato,
+    aritmetica, aritmetica1, parte, parte1, parte2, list_table, list_table1
     ;
 
 start with Start;
 
-Start ::= general ;
-general ::= Stmt EndStmt general | /*epsilon*/ ;
+Start ::= general1 ;
+general1 ::= general | /*epsilon*/ ;
+general ::= Stmt EndStmt general1 | error EndStmt general1;
 Stmt ::= StmtDML | StmtDDL | StmtTCL | StmtTSQL ;
 StmtDML ::= select | insert | update | delete ;
 StmtDDL ::= create | alter | truncate | drop ;
@@ -51,3 +153,7 @@ aritmetica1 ::= MAS parte | MENOS parte | /*epsilon*/ ;
 parte ::= parte2 parte1 ;
 parte1 ::= MULT parte2 | DIV parte2 | /*epsilon*/ ;
 parte2 ::= PARENTESIS_ABIERTO aritmetica PARENTESIS_CERRADO | INT | FLOAT | obj_n ;
+
+truncate ::= TRUNCATE TABLE list_table ;
+list_table ::= obj_n list_table1 ;
+list_table ::= COMA list_table | /*epsilon*/ ;
