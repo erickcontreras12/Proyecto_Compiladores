@@ -1,0 +1,53 @@
+package Classes;
+
+import java_cup.runtime.Symbol;
+
+parser code
+{:
+    private Symbol s;
+
+    public void syntax_error(Symbol s){
+        this.s = s
+    }
+
+    public Symbol getS{
+        return this.s
+    }
+:};
+
+terminal BIT, INT, FLOAT, STRING, PALABRA_RESERVADA, ID, ERROR, ERROR_F, MAS, MENOS, MULT, DIV, RES, MENOR, MENOR_O_IGUAL, MAYOR, MAYOR_O_IGUAL, IGUAL, IGUAL_A, DIFERENTE, 
+    AND, OR, EXCLAMACION, PUNTO_COMA, COMA, PUNTO, CORCHETE_ABIERTO, CORCHETE_CERRADO, PARENTESIS_ABIERTO, PARENTESIS_CERRADO, LLAVE_ABIERTO, LLAVE_CERRADO, CORCHETES, PARENTESIS,
+    LLAVES, ARROBA, NUMERAL, DOBLE_NUMERAL, COMENTARIO_M, INSERT, DELETE, UPDATE, SELECT, CREATE, ALTER, TRUNCATE, DROP, INTO, VALUES, DEFAULT, DATABASE, INDEX, USER,
+    TABLE, VIEW, CURRENT, NAME, MODIFY, ON, CONSTRAINT, USABLE, REBUILD, DISABLE, UNUSABLE, ALL, WITH, DEFAULT_SCHEMA, NULL, LOGIN, PASSWORD, ADD, COLUMN, UNIQUE, FLOAT_P,
+    CHAR, VARCHAR, DECIMAL, NUMERIC, IMAGE, VARBINARY, TEXT, DATE, DATETIME, DATETIME2, SMALLDATETIME, TIME, DATETIMEOFFSET, TIMESTAMP, MONEY, REAL, BIT_P, INT_P, BETWEEN,
+    GO, LIKE, NOT, PRIMARY, KEY, IDENTITY, REFERENCES, AND_O, OR_O, FOREIGN, CHECK, IF, EXISTS, TOP, PERCENT, FROM, WHERE, SET, AS, DISTINCT, LEFT, RIGHT, GROUP, ORDER, HAVING,
+    JOIN, OUTER, INNER, FULL, DESC, ASC, AVG, SUM, COUNT, MAX, MIN, CLUSTERED, NONCLUSTERED, FOR, INCLUDE, BY, NAMES, FILE, FILES, FILENAME, SIZE, MAXSIZE, KB, MB, GB, TB,
+    FILEGROWTH, PROCEDURE, FUNCTION, RETURN, RETURNS, EXEC, EXECUTE, EXECUTE_AS_CLAUSE, USE, SCHEMA, BEGIN, END, TRAN, TRANSACTION, COMMIT, ROLLBACK, SAVE,
+    DECLARE, VARYING, CURSOR, TO, RECOMPILE, ENCRYPTION, SELF, OWNER, CALLER, OUT, OUTPUT, READONLY, REPLICATION, OFF, SCHEMABINDING, INLINE, CALLED, MARK, STATIC,
+    FORWARD_ONLY, KEYSET, FAST_FORWARD, DYNAMIC, READ_ONLY, SCROLL_LOCKS, SCROLL, OPTIMISTIC, TYPE_WARNING, INPUT, LOCAL, GLOBAL, COLLATE , INMEDIATE;
+
+non terminal Start, general, Stmt, EndStmt, StmtDML, StmtDDL, StmtTCL, StmtTSQL, select, insert, update, delete, create, alter, truncate, drop, obj_n, obj_n1, obj_2, tipo_datp,
+    aritmetica, aritmetica1, parte, parte1, parte2
+    ;
+
+start with Start;
+
+Start ::= general ;
+general ::= Stmt EndStmt general | /*epsilon*/ ;
+Stmt ::= StmtDML | StmtDDL | StmtTCL | StmtTSQL ;
+StmtDML ::= select | insert | update | delete ;
+StmtDDL ::= create | alter | truncate | drop ;
+StmtTSQL ::= cursor ;
+EndStmt ::= GO | PUNTO_COMA | PUNTO_COMA GO | GO PUNTO_COMA | PUNTO_COMA GO PUNTO_COMA  ;
+
+obj_n ::= ID obj_n1 ;
+obj_n1 ::= PUNTO ID obj_n2 | /*epsilon*/ ;
+obj_n2 ::= PUNTO ID | /*epsilon*/ ;
+
+tipo_dato ::= STRING | BIT | INT | FLOAT ;
+
+aritmetica ::= parte aritmetica1 ; 
+aritmetica1 ::= MAS parte | MENOS parte | /*epsilon*/ ;
+parte ::= parte2 parte1 ;
+parte1 ::= MULT parte2 | DIV parte2 | /*epsilon*/ ;
+parte2 ::= PARENTESIS_ABIERTO aritmetica PARENTESIS_CERRADO | INT | FLOAT | obj_n ;

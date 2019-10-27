@@ -31,9 +31,10 @@ public class minisql extends javax.swing.JFrame {
     /**
      * Creates new form minisql
      */
-    public minisql() {
+    public minisql() throws Exception {
         initComponents();
         startLexer();
+        startCUP();
     }
 
     /**
@@ -190,6 +191,20 @@ public class minisql extends javax.swing.JFrame {
         File lexerFile = new File(absolutePath);
         jflex.Main.generate(lexerFile);
     }
+    
+    public void startCUP() throws IOException, Exception{
+        String syntaxRoute = "", aux = "";
+        String absolutePath = new File(".").getAbsolutePath();
+        absolutePath = absolutePath.substring(0, absolutePath.length() - 1);
+        syntaxRoute = absolutePath;
+        absolutePath += "src\\Classes\\LexerCup.flex";
+        syntaxRoute += "src\\Classes\\Syntax.cup";
+        String[] routesS = {"-parser","Syntax",syntaxRoute};
+        
+        File file = new File(absolutePath);
+        jflex.Main.generate(file);
+        java_cup.Main.main(routesS);
+    }
 
     public void lexicalAnalyzer() throws IOException {
         validateTokens();
@@ -279,7 +294,11 @@ public class minisql extends javax.swing.JFrame {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new minisql().setVisible(true);
+                try {
+                    new minisql().setVisible(true);
+                } catch (Exception ex) {
+                    Logger.getLogger(minisql.class.getName()).log(Level.SEVERE, null, ex);
+                }
             }
         });
     }
