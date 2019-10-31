@@ -8,6 +8,7 @@ import static Classes.Token.*;
 L = [a-zA-Z]
 D = [0-9]
 BLANK = [ ,\t,\r,\n]
+ESPACIO = [ ]
 %{
 public String lexeme;
 public int getLine() { return yyline; }
@@ -211,7 +212,7 @@ MINUTE|TRANSLATION|DAY|MODULE|TRIM|DEALLOCATE|MONTH|TRUE|DEC|UNION|NATIONAL|NATU
 NCHAR|DEFERRABLE NEXT|UPPER|DEFERRED|NO|USAGE|DELETE|NONE|USING|DESCRIBE|DESCRIPTOR|NULLIF|
 DIAGNOSTICS|DISCONNECT|OCTET_LENGTH|OF|DOMAIN|WHEN|ONLY|WHENEVER|OPEN|
 ELSE|OPTION|WORK|END-EXEC|WRITE|ESCAPE|YEAR|EXCEPT|ZONE|EXCEPTION {lexeme=yytext(); return PALABRA_RESERVADA;}
-{L}({L}|{D}|_)*| "["{L}({L}|{D}|_)*"]" {lexeme=yytext(); return ID;}
+{L}({L}|{D}|_)*| "["{L}({L}|{D}|_|{ESPACIO})*"]" {lexeme=yytext(); return ID;}
 "+" {lexeme=yytext(); return MAS;}
 "-" {lexeme=yytext(); return MENOS;}
 "*" {lexeme=yytext(); return MULT;}

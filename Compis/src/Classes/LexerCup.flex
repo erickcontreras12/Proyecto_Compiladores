@@ -10,6 +10,7 @@ import java_cup.runtime.Symbol;
 L = [a-zA-Z]
 D = [0-9]
 BLANK = [ ,\t,\r,\n]
+ESPACIO = [ ]
 %{
     private Symbol symbol(int type, Object value){
         return new Symbol(type, yyline, yycolumn, value);
@@ -217,7 +218,7 @@ MINUTE|TRANSLATION|DAY|MODULE|TRIM|DEALLOCATE|MONTH|TRUE|DEC|UNION|NATIONAL|NATU
 NCHAR|DEFERRABLE NEXT|UPPER|DEFERRED|NO|USAGE|DELETE|NONE|USING|DESCRIBE|DESCRIPTOR|NULLIF|
 DIAGNOSTICS|DISCONNECT|OCTET_LENGTH|OF|DOMAIN|WHEN|ONLY|WHENEVER|OPEN|
 ELSE|OPTION|WORK|END-EXEC|WRITE|ESCAPE|YEAR|EXCEPT|ZONE|EXCEPTION {return new Symbol(sym.PALABRA_RESERVADA, yycolumn, yyline, yytext());}
-{L}({L}|{D}|_)*| "["{L}({L}|{D}|_)*"]" {return new Symbol(sym.ID, yycolumn, yyline, yytext());}
+{L}({L}|{D}|_)*| "["{L}({L}|{D}|_|{ESPACIO})*"]" {return new Symbol(sym.ID, yycolumn, yyline, yytext());}
 "+" {return new Symbol(sym.MAS, yycolumn, yyline, yytext());}
 "-" {return new Symbol(sym.MENOS, yycolumn, yyline, yytext());}
 "*" {return new Symbol(sym.MULT, yycolumn, yyline, yytext());}

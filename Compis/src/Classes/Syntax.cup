@@ -197,6 +197,9 @@ Stmt2 ::= StmtDML
         | StmtDDL
         | cursor EndStmt
         | GO 
+        | transaction end_tran 
+        | execute EndStmt
+        | USE obj_n EndStmt
         | error EndStmt ;
 
 StmtDML ::= select EndStmt
