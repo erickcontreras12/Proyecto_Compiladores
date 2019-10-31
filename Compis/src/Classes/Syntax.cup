@@ -1,0 +1,499 @@
+package Classes;
+
+import java_cup.runtime.Symbol;
+import java.util.List;
+import java.util.LinkedList;
+import java_cup.runtime.virtual_parse_stack;
+import java.lang.reflect.Field;
+
+parser code
+{:
+    private Symbol s;
+    private String errors_list = ""; 
+
+    public String getErrorString(){
+        return errors_list;
+    }
+
+    public final Class getSymbolContainer() {
+        return sym.class;
+    }
+
+    public String symbl_name_from_id(int id){
+    Field[] fields = getSymbolContainer().getFields();
+    for(Field f : fields){
+        try {
+                    if (f.getInt(null)==id)
+              return f.getName();
+        } catch (IllegalArgumentException e) {
+            //e.printStackTrace();
+        } catch (IllegalAccessException ex) { 
+                        //e.printStackTrace();
+                } 
+      }
+    return "invalid symbol id";
+    }
+
+    public void syntax_error(Symbol s){
+        this.s=s; 
+        List<Integer> ids = expected_token_ids();
+        LinkedList<String> list = new LinkedList<String>();
+        for (Integer expected : ids){
+            list.add(symbl_name_from_id(expected));
+        }
+        errors_list += "Line: " + (s.right + 1) + " and column: " + (s.left + 1) + ", '" + s.value +"', Error: missing symbol " + list + "\n";
+        System.out.println("Error R de sintaxis: "+ s.value +" Columna "+(s.left+1)+" linea "+(s.right+1)+"tokens esperados"+list+"\n\n" );  
+    }
+
+    public List<Integer> expected_token_ids() {
+        List<Integer> ret = new LinkedList<Integer>();
+    int parse_state = ((Symbol)stack.peek()).parse_state ;
+    short[] row = action_tab[parse_state];
+    for (int i = 0; i<row.length; i+=2){
+            if (row[i]==-1) continue;
+            if (!validate_expected_symbol(row[i])) continue;
+            ret.add(new Integer(row[i]));
+    }
+    return ret;
+    }
+
+    protected static final int _error_sync_size(){
+        return 1;
+    }
+
+    private boolean validate_expected_symbol(int id){
+    short lhs,rhs_size;
+    int act;
+    try {
+            virtual_parse_stack vstack = new virtual_parse_stack(stack);
+            /* parse until we fail or get past the lookahead input */
+            for (;;)
+            {
+                /* look up the action from the current state (on top of stack) */
+                act = get_action(vstack.top(), id);
+                
+                /* if its an error, we fail */
+        if (act == 0) return false;
+
+            /* > 0 encodes a shift */
+        if (act > 0){
+                    /* push the new state on the stack */
+                    vstack.push(act-1);
+
+                /* advance simulated input, if we run off the end, we are done */
+                    if (!advance_lookahead()) return true;
+                }
+                /* < 0 encodes a reduce */
+        else
+        {
+                    /* if this is a reduce with the start production we are done */
+                    if ((-act)-1 == start_production())  return true;
+
+                    /* get the lhs Symbol and the rhs size */
+                    lhs = production_tab[(-act)-1][0];
+                    rhs_size = production_tab[(-act)-1][1];
+                    /* pop handle off the stack */
+                    for (int i = 0; i < rhs_size; i++) vstack.pop();
+                    vstack.push(get_reduce(vstack.top(), lhs));
+                }
+            }
+    } catch (Exception e) {
+            e.printStackTrace();
+    }
+    return true;
+    }
+
+    public void unrecovered_syntax_error(Symbol s) throws java.lang.Exception{ 
+        List<Integer> ids = new LinkedList<>();
+        ids=expected_token_ids();
+    LinkedList<String> list = new LinkedList<String>();
+    for (Integer expected : ids){
+            list.add(symbl_name_from_id(expected));
+            list.add("\n");
+        }
+
+        errors_list += "Line: " + (s.right + 1) + " and column: " + (s.left + 1) + ", '" + s.value +"', Non recuperable error: missing symbol " + list + "\n";
+        System.out.println("Error NR de sintaxis: "+ s.value +" Columna "+(s.left+1)+" linea "+(s.right+1)+"tokens esperados"+list+"\n\n" );   
+    }
+
+:};
+
+terminal BIT, INT, FLOAT, STRING, PALABRA_RESERVADA, ID, ERROR, ERROR_F, MAS, MENOS, MULT, DIV, RES, MENOR, MENOR_O_IGUAL, MAYOR,
+    MAYOR_O_IGUAL, IGUAL, IGUAL_A, DIFERENTE, AND, OR, EXCLAMACION, PUNTO_COMA, COMA, PUNTO, CORCHETE_ABIERTO, CORCHETE_CERRADO,
+    PARENTESIS_ABIERTO, PARENTESIS_CERRADO, LLAVE_ABIERTO, LLAVE_CERRADO, CORCHETES, PARENTESIS, LLAVES, ARROBA, NUMERAL, OF, 
+    DOBLE_NUMERAL, COMENTARIO_M, INSERT, DELETE, UPDATE, SELECT, CREATE, ALTER, TRUNCATE, DROP, INTO, VALUES, DEFAULT, DATABASE, INDEX,
+    USER, TABLE, VIEW, CURRENT, NAME, MODIFY, ON, CONSTRAINT, USABLE, REBUILD, DISABLE, UNUSABLE, ALL, WITH, DEFAULT_SCHEMA,IN,
+    NULL, LOGIN, PASSWORD, ADD, COLUMN, UNIQUE, FLOAT_P, CHAR, VARCHAR, DECIMAL, NUMERIC, IMAGE, VARBINARY, TEXT, DATE, DATETIME,
+    DATETIME2, SMALLDATETIME, TIME, DATETIMEOFFSET, TIMESTAMP, MONEY, REAL, BIT_P, INT_P, BETWEEN, GO, LIKE, NOT, PRIMARY, KEY, IDENTITY, REFERENCES,
+    AND_O, OR_O, FOREIGN, CHECK, IF, EXISTS, TOP, PERCENT, FROM, WHERE, SET, AS, DISTINCT, LEFT, RIGHT, GROUP, ORDER, HAVING, JOIN, OUTER,
+    INNER, FULL, DESC, ASC, AVG, SUM, COUNT, MAX, MIN, CLUSTERED, NONCLUSTERED, FOR, INCLUDE, BY, NAMES, FILE, FILES, FILENAME, SIZE,
+    MAXSIZE, KB, MB, GB, TB, FILEGROWTH, PROCEDURE, FUNCTION, RETURN, RETURNS, EXEC, EXECUTE, EXECUTE_AS_CLAUSE, USE, SCHEMA, BEGIN, END, 
+    TRAN, TRANSACTION, COMMIT, ROLLBACK, SAVE, DECLARE, VARYING, CURSOR, TO, RECOMPILE, ENCRYPTION, SELF, OWNER, CALLER, OUT, OUTPUT, READONLY, 
+    REPLICATION, OFF, SCHEMABINDING, INLINE, CALLED, MARK, STATIC, FORWARD_ONLY, KEYSET, FAST_FORWARD, DYNAMIC, READ_ONLY, SCROLL_LOCKS, 
+    SCROLL, OPTIMISTIC, TYPE_WARNING, INPUT, LOCAL, GLOBAL, COLLATE , INMEDIATE, DELAYED_DURABILITY, INSENSITIVE, 
+    ALLOW_ENCRYPTED_VALUE_MODIFICATIONS, GO_PUNTO_COMA, PUNTO_COMA_GO, PROC, NVARCHAR, VARIABLE ;
+
+
+non terminal Start, general, Stmt, Stmt2, StmtDML, StmtDDL, EndStmt, select, insert, update, delete, create, create_f_sp, alter, truncate, drop, cursor, obj_n, obj_n1, obj_n2, tipo_dato,
+    aritmetica, i, V, X, T, U, C; 
+
+non terminal opcion_select, seleccion, expresion, columna, columna1, columna2, columna3, funciones, valor, valor2, valor3, puede, alias_columna, origen, origen1, alias_tabla, 
+    opcion_alias, joins, tipo_join, tipo_join1, joins1, condicionales, condicionales1, otra_condicion, operadores_logicos, operadores, operadores2, operadores3,
+    agrupado, agrupado1, teniendo, teniendo1,teniendo2, orden, orden1, tipo_orden, num, orden_name, num_list, num_list1, num_list2, num_list3, funciones_call
+    ;
+
+non terminal into, seleccion2, campo, campo1, insercion, valores, valores1, val_ins, val_ins1;
+
+non terminal asignaciones, asignaciones1, asignaciones2, opciones_update, porcentaje;
+
+non terminal opciones_delete, delete1;
+
+non terminal list_table, list_tableA;
+
+non terminal drop_name, if_op, drop_table, drop_db, db_list, db_list1, drop_index, index_list, index_list1, drop_view, view_list, view_list1, drop_user;
+
+non terminal transaction, commit, rollback, savepoint, T2, T3, T4, T5, T6, T7, obj_nt, on_off, begin_tran, begin_tran2, end_tran ;
+
+non terminal procedure, numSp, paramSP, tipoParam, tipo_out, paramSP1, paramSP2, paramSP3, sp_op, sp_op1, sp_op2, sp_op3, clause_exc, clause,
+    replicationSP, startSP, startSP1, startSP2 ;
+
+non terminal execute, proc;
+
+non terminal function, paramF, paramF1, paramF2, as, readonly, with3, with1, with2, fun_op, input, stmtFun, return, tipo_retorno ;
+
+non terminal cursor1, cursor2, cursor3, cursor4, cursor5, cursor6, cursor7, for_update, for_update1, column_list, column_list1 ;
+
+non terminal porsiacaso, opciones_crear, database_create, primary, primary2, db_create, filespec1, filespec2, filename, 
+    optionals, optional, optional1, size, size1, maxsize, maxsize1, filegrowth, filegrowth1, opciones_index, index_create, 
+    column_index, column_index1, column_index2, mas_index, table_create, add_column, add_column1, add_column2, data_tipo, constraint, 
+    constraint1, constraint2, expresion_logica, expresion_logica1, expresion_logica2, user_create, for_user, for_from, with_user, limited_options, 
+    limited_options1, option_user, view_create, column_view, column_view1, column_view2, func_proc, names, list_id, list_id2, constraint3,
+    constraint4, longitud;
+
+non terminal opciones, database, nombre_actual, tipo_alter_base, index, nombre_index, accion_index, table, accion_alter, tipo_add,
+    add_column6, add_column5, add_column7, drop_column, user_alter, set_item, set_item1, set_item2, constraint5 ;
+
+start with Start;
+
+Start ::= general ;
+general ::= Stmt |;
+Stmt ::= select EndStmt general
+        | insert EndStmt general
+        | update EndStmt general
+        | delete EndStmt general
+        | alter EndStmt general
+        | create EndStmt general
+        | create_f_sp general
+        | truncate EndStmt general
+        | drop EndStmt general
+        | cursor EndStmt general
+        | transaction end_tran general
+        | execute EndStmt general
+        | error EndStmt general 
+        | GO general
+        | USE obj_n EndStmt general ;
+
+Stmt2 ::= StmtDML 
+        | StmtDDL
+        | cursor EndStmt
+        | GO 
+        | error EndStmt ;
+
+StmtDML ::= select EndStmt
+        | insert EndStmt
+        | update EndStmt
+        | delete EndStmt ;
+
+StmtDDL ::= alter EndStmt 
+        | create EndStmt 
+        | create_f_sp
+        | truncate EndStmt 
+        | drop EndStmt  ;
+
+EndStmt ::= GO | PUNTO_COMA | PUNTO_COMA_GO | GO_PUNTO_COMA ;
+
+num ::= INT | BIT ;
+
+obj_n ::= ID obj_n1 ;
+obj_n1 ::= PUNTO ID obj_n2 | ;
+obj_n2 ::= PUNTO ID | ;
+
+tipo_dato ::= STRING | NULL | INT | BIT | FLOAT ;
+
+aritmetica ::= i V  | PARENTESIS_ABIERTO aritmetica C V ;
+V ::= MULT T X | DIV T X  | MAS aritmetica | MENOS aritmetica | ;
+X ::= MAS aritmetica  | MENOS aritmetica |  ;
+T ::= i U  | PARENTESIS_ABIERTO aritmetica C U ;
+U ::= MULT T  | DIV T   |  ;
+C ::= PARENTESIS_CERRADO ;
+i ::= INT | BIT | FLOAT | obj_n ;
+
+truncate ::= TRUNCATE TABLE list_table ;
+list_table ::= obj_n list_tableA ;
+list_tableA ::= COMA list_table | ;
+
+select ::=  SELECT opcion_select FROM origen joins condicionales agrupado teniendo orden ;
+
+opcion_select ::=  seleccion columna ;
+seleccion ::=  DISTINCT | ALL | TOP expresion |  ;
+expresion ::=  num | PARENTESIS_ABIERTO num PARENTESIS_CERRADO ;
+columna ::=  columna1 alias_columna columna2 ;
+columna1 ::=  funciones | aritmetica | columna3 IGUAL columna3 | MULT ;
+columna2 ::=  COMA columna |   ;
+columna3 ::= obj_n | ARROBA ID | funciones ;
+
+funciones ::=  SUM PARENTESIS_ABIERTO valor PARENTESIS_CERRADO | AVG PARENTESIS_ABIERTO valor PARENTESIS_CERRADO | 
+            COUNT PARENTESIS_ABIERTO valor PARENTESIS_CERRADO | MIN PARENTESIS_ABIERTO valor PARENTESIS_CERRADO |
+             MAX PARENTESIS_ABIERTO valor PARENTESIS_CERRADO | funciones_call ;
+funciones_call ::= obj_n PARENTESIS_ABIERTO valor3 PARENTESIS_CERRADO | obj_n PARENTESIS ;
+valor ::=  num | MULT | puede obj_n ;
+valor2 ::= COMA valor3 |  ;
+valor3 ::= tipo_dato valor2 | obj_n valor2 ;
+puede ::=  DISTINCT |   ;
+alias_columna ::=  AS opcion_alias |  ;
+
+origen ::=  obj_n alias_tabla origen1 ;
+origen1 ::=  COMA origen |  ; 
+alias_tabla ::=  AS opcion_alias | ID |   ;
+opcion_alias ::=  STRING | ID ;
+
+joins ::=  tipo_join JOIN obj_n alias_tabla ON obj_n IGUAL obj_n joins1 | ;
+tipo_join ::=  INNER | LEFT tipo_join1 | RIGHT tipo_join1 | FULL tipo_join1 |  ;
+tipo_join1 ::=  OUTER |   ;
+joins1 ::=  joins ;
+
+condicionales ::=  WHERE obj_n operadores2 condicionales1 | ;
+condicionales1 ::=  operadores_logicos otra_condicion |   ;
+otra_condicion ::=  obj_n operadores2 condicionales1 ;
+operadores_logicos ::=  AND | OR | AND_O | OR_O ;
+operadores2 ::= operadores tipo_retorno | operadores3 ;
+operadores ::=  MENOR | MAYOR | MENOR_O_IGUAL | MAYOR_O_IGUAL | DIFERENTE | IGUAL_A | IGUAL | LIKE | BETWEEN num AND num  ;
+operadores3 ::= IN PARENTESIS_ABIERTO num_list PARENTESIS_CERRADO ;
+num_list ::= tipo_dato num_list1 ;
+num_list1 ::= COMA num_list | ;
+
+agrupado ::=  GROUP BY obj_n agrupado1 |  ;
+agrupado1 ::=  COMA obj_n agrupado1 |  ;
+
+teniendo ::=  HAVING teniendo1 |  ;
+teniendo1 ::=  orden_name operadores tipo_dato teniendo2 ;
+teniendo2 ::=  operadores_logicos teniendo1 |  ; 
+
+orden ::=  ORDER BY orden_name tipo_orden orden1 |    ;
+orden1 ::=  COMA obj_n orden1 |  ;
+tipo_orden ::=  ASC | DESC |  ;
+orden_name ::= obj_n | funciones ;
+
+drop ::= DROP drop_name ;
+drop_name ::= drop_view | drop_table | drop_index | drop_db | drop_user ;
+
+if_op ::= IF EXISTS | ;
+
+drop_table ::= TABLE if_op list_table ;
+
+drop_db ::= DATABASE if_op db_list ;
+db_list ::= obj_n db_list1 ;
+db_list1 ::= COMA db_list | ;
+
+drop_index ::= INDEX if_op index_list ;
+index_list ::= obj_n ON obj_n index_list1 ;
+index_list1 ::= COMA index_list |  ;
+
+drop_view ::= VIEW if_op view_list ;
+view_list ::= obj_n view_list1 ;
+view_list1 ::= COMA view_list | ;
+
+drop_user ::= USER if_op ID;
+
+insert ::= INSERT into obj_n seleccion2 insercion ;
+into ::= INTO | ;
+seleccion2 ::= PARENTESIS_ABIERTO campo PARENTESIS_CERRADO | ;
+campo ::= ID campo1 ;
+campo1 ::= COMA campo | ; 
+insercion ::= VALUES valores | DEFAULT VALUES ;
+valores ::= PARENTESIS_ABIERTO val_ins PARENTESIS_CERRADO valores1 ;
+valores1 ::= COMA valores | ;
+val_ins ::= tipo_dato val_ins1 ;
+val_ins1 ::= COMA val_ins | ;
+
+update ::= UPDATE opciones_update obj_n SET obj_n IGUAL asignaciones condicionales ;
+
+asignaciones ::= asignaciones1 asignaciones2 ;
+asignaciones2 ::= COMA obj_n IGUAL asignaciones | ;
+asignaciones1 ::= STRING | aritmetica ;
+
+opciones_update ::= TOP expresion porcentaje | ;
+
+porcentaje ::= PERCENT | ;
+
+delete ::=  DELETE opciones_delete delete1 obj_n condicionales ;
+delete1 ::= FROM | ;
+opciones_delete ::= TOP expresion porcentaje | ;
+
+transaction ::= BEGIN T2 T6 T3 EndStmt begin_tran;
+T2 ::= TRAN | TRANSACTION ;
+T3 ::= WITH MARK T4 | ; 
+T4 ::= STRING |  ;
+begin_tran ::= Stmt2 begin_tran2 | savepoint begin_tran2 | ;
+begin_tran2 ::= begin_tran ;
+end_tran ::= commit EndStmt | rollback EndStmt ;
+
+commit ::= COMMIT T5 T7 ;
+T5 ::= T2 T6 |  ;
+T6 ::= obj_n | ARROBA ID | ;
+T7 ::= WITH PARENTESIS_ABIERTO DELAYED_DURABILITY IGUAL on_off PARENTESIS_CERRADO | ;
+on_off ::= ON | OFF ;
+
+rollback ::= ROLLBACK T2 T6 ;
+
+savepoint ::= SAVE T2 T6 ; 
+
+proc ::= PROC | PROCEDURE ;
+procedure ::= proc obj_n numSp paramSP sp_op replicationSP startSP ;
+numSp ::= PUNTO_COMA num |  ;
+paramSP ::= ARROBA ID tipoParam paramSP3 | ;
+tipoParam ::= CURSOR VARYING tipo_out | data_tipo paramSP1 paramSP2 | ID READONLY ;
+tipo_out ::= OUT | OUTPUT ;
+paramSP1 ::= IGUAL DEFAULT | ;  
+paramSP2 ::= tipo_out | ;
+paramSP3 ::= COMA paramSP | ;  
+sp_op ::= WITH sp_op1 | ;
+sp_op1 ::=  sp_op2 sp_op3 ;
+sp_op2 ::=  ENCRYPTION | RECOMPILE | clause_exc AS clause ;
+sp_op3 ::= COMA sp_op1 | ;
+clause_exc ::= EXEC | EXECUTE ;
+clause ::= SELF |  CALLER | OWNER | ID ;
+replicationSP ::= FOR REPLICATION | ;
+startSP ::=  AS BEGIN startSP1 END ; 
+startSP1 ::=  Stmt2 startSP2 ;
+startSP2 ::=  startSP1 | ;
+
+function ::= FUNCTION obj_n PARENTESIS_ABIERTO paramF PARENTESIS_CERRADO RETURNS data_tipo with3 as stmtFun ;
+paramF ::= paramF1 | ;
+paramF1 ::= ARROBA ID as data_tipo paramSP1 readonly paramF2 ;
+paramF2 ::= COMA paramF1 | ;
+as ::= AS | ;
+readonly ::= READONLY | ;
+with3 ::= WITH with1 | ;
+with1 ::=  fun_op with2 ; 
+with2 ::= COMA with1 |  ;
+fun_op ::= ENCRYPTION | SCHEMABINDING | EXECUTE_AS_CLAUSE | RETURNS NULL input | CALLED input | INLINE on_off ;
+input ::= ON NULL INPUT ;
+stmtFun ::= BEGIN select EndStmt return END ;
+return ::= RETURN tipo_retorno | RETURN PARENTESIS_ABIERTO tipo_retorno PARENTESIS_CERRADO ;
+tipo_retorno ::= tipo_dato | ARROBA ID ;
+
+cursor::= DECLARE ID cursor7 cursor6 CURSOR cursor1 cursor2 cursor3 cursor4 cursor5 FOR select for_update ;
+cursor1 ::= LOCAL | GLOBAL | ;
+cursor2 ::= FORWARD_ONLY | SCROLL | ;
+cursor3 ::= STATIC | KEYSET | DYNAMIC | FAST_FORWARD | ; 
+cursor4 ::= READ_ONLY | SCROLL_LOCKS | OPTIMISTIC | ;
+cursor5 ::= TYPE_WARNING | ;
+cursor6 ::= SCROLL | ;
+cursor7 ::= INSENSITIVE | ;
+for_update ::= FOR UPDATE for_update1 | ; 
+for_update1 ::= OF column_list | ;
+column_list ::= ID column_list1 ;
+column_list1 ::= COMA column_list | ;
+
+create ::= CREATE opciones_crear ;
+create_f_sp ::= CREATE porsiacaso func_proc;
+
+porsiacaso ::= OR ALTER | ;
+
+opciones_crear ::= DATABASE database_create | opciones_index constraint4 INDEX index_create | TABLE table_create | USER user_create | VIEW view_create ;
+func_proc ::= procedure | function ;
+
+database_create ::= obj_n db_create ;
+db_create ::= ON primary filespec1 | COLLATE ID | ;
+primary ::= PRIMARY |  ;
+filespec1 ::= PARENTESIS_ABIERTO names IGUAL STRING COMA filename IGUAL STRING optionals PARENTESIS_CERRADO filespec2;
+filespec2 ::= COMA filespec1 | ;
+names ::= NAME | NAMES ;
+filename ::= FILE | FILENAME | FILES ;
+optionals ::= COMA optional optional1 | ; 
+optional ::= size | maxsize | filegrowth ; 
+optional1 ::= optionals ;
+size ::= SIZE IGUAL num size1 ;
+size1 ::= KB | MB | GB | TB | ;
+maxsize ::= MAXSIZE IGUAL maxsize1 ;
+maxsize1 ::= num size1 | ;
+filegrowth ::= FILEGROWTH IGUAL num filegrowth1 ;
+filegrowth1 ::= size1 | RES ;
+
+opciones_index ::= UNIQUE |  ;
+
+index_create ::= obj_n ON obj_n PARENTESIS_ABIERTO column_index PARENTESIS_CERRADO mas_index ;
+column_index ::= column_index1 column_index2 ;
+column_index2 ::= COMA column_index | ;
+column_index1 ::= obj_n tipo_orden ;
+mas_index ::= INCLUDE PARENTESIS_ABIERTO column_index PARENTESIS_CERRADO |  ;
+
+table_create ::= obj_n PARENTESIS_ABIERTO add_column PARENTESIS_CERRADO primary2 ;
+add_column ::= add_column1 add_column2 ;
+add_column2 ::= COMA add_column | ; 
+add_column1 ::= obj_n data_tipo constraint | CONSTRAINT ID constraint1 | PRIMARY KEY constraint4 constraint3 |
+    FOREIGN KEY PARENTESIS_ABIERTO obj_n PARENTESIS_CERRADO REFERENCES obj_n PARENTESIS_ABIERTO obj_n PARENTESIS_CERRADO ;
+data_tipo ::= CHAR PARENTESIS_ABIERTO num PARENTESIS_CERRADO | VARCHAR PARENTESIS_ABIERTO num PARENTESIS_CERRADO | NVARCHAR PARENTESIS_ABIERTO num PARENTESIS_CERRADO
+| TEXT | IMAGE | VARBINARY | VARBINARY PARENTESIS_ABIERTO MAX PARENTESIS_CERRADO| DATE | DATETIME | DATETIME2 | SMALLDATETIME | TIME |
+DATETIMEOFFSET | TIMESTAMP| FLOAT_P PARENTESIS_ABIERTO num PARENTESIS_CERRADO | MONEY | REAL | BIT_P | INT_P longitud | 
+DECIMAL PARENTESIS_ABIERTO num COMA num PARENTESIS_CERRADO | NUMERIC PARENTESIS_ABIERTO num COMA num PARENTESIS_CERRADO ;
+longitud ::= PARENTESIS_ABIERTO num PARENTESIS_CERRADO | ;
+constraint ::= constraint1 constraint2 | ;
+constraint2 ::= constraint;
+constraint1 ::= NULL | UNIQUE constraint3 | PRIMARY KEY constraint4 constraint3 | FOREIGN KEY PARENTESIS_ABIERTO obj_n PARENTESIS_CERRADO REFERENCES obj_n PARENTESIS_ABIERTO obj_n PARENTESIS_CERRADO | 
+    NOT NULL | CHECK PARENTESIS_ABIERTO expresion_logica PARENTESIS_CERRADO | DEFAULT data_tipo | IDENTITY PARENTESIS_ABIERTO num COMA num PARENTESIS_CERRADO;
+constraint3 ::= PARENTESIS_ABIERTO list_id PARENTESIS_CERRADO | ;
+constraint4 ::= CLUSTERED | NONCLUSTERED | ;
+list_id ::= ID tipo_orden list_id2 ;
+list_id2 ::= COMA list_id | ;
+expresion_logica ::= expresion_logica1 expresion_logica2 ;
+expresion_logica2 ::= operadores_logicos expresion_logica | ;
+expresion_logica1 ::= obj_n operadores2 ;
+primary2 ::= ON PRIMARY | ;
+
+user_create ::= ID for_user with_user ;
+for_user ::= for_from LOGIN ID | ; 
+for_from ::= FOR | FROM ;
+with_user ::= WITH limited_options | ;
+limited_options ::= option_user limited_options1 ;
+limited_options1 ::= COMA limited_options | ;
+option_user ::= DEFAULT_SCHEMA IGUAL ID | ALLOW_ENCRYPTED_VALUE_MODIFICATIONS IGUAL on_off  ;
+
+view_create ::= obj_n column_view AS select ;
+column_view ::= column_view1 column_view2 | ;
+column_view2 ::= column_view1 COMA column_view | ;
+column_view1 ::= obj_n;
+
+
+alter ::= ALTER opciones ;
+
+opciones ::= DATABASE database | INDEX index | TABLE table | USER user_alter | VIEW view_create | procedure | function ;
+ 
+database ::= nombre_actual tipo_alter_base ;
+nombre_actual ::= ID | CURRENT ;
+tipo_alter_base ::= MODIFY NAME IGUAL ID | COLLATE ID | SET ROLLBACK INMEDIATE ;
+ 
+index ::= nombre_index ON obj_n accion_index ;
+nombre_index ::= obj_n | ALL ;
+accion_index ::= DISABLE | REBUILD | UNUSABLE | USABLE ;
+ 
+table::= obj_n accion_alter ;
+accion_alter ::= ALTER COLUMN add_column5 | ADD tipo_add | DROP drop_column ;
+tipo_add ::= CONSTRAINT obj_n constraint5 add_column6 | add_column7 | FOREIGN KEY PARENTESIS_ABIERTO obj_n PARENTESIS_CERRADO REFERENCES obj_n PARENTESIS_ABIERTO obj_n PARENTESIS_CERRADO ;
+add_column7 ::= add_column5 add_column6 ;
+add_column6 ::= COMA tipo_add | ; 							
+add_column5 ::= obj_n data_tipo constraint ;
+drop_column ::= CONSTRAINT list_id | COLUMN list_id | INDEX list_id ;
+constraint5 ::= NULL | UNIQUE constraint3 | PRIMARY KEY constraint4 constraint3 | FOREIGN KEY PARENTESIS_ABIERTO obj_n PARENTESIS_CERRADO REFERENCES obj_n PARENTESIS_ABIERTO obj_n PARENTESIS_CERRADO | 
+    NOT NULL | CHECK PARENTESIS_ABIERTO expresion_logica PARENTESIS_CERRADO | DEFAULT data_tipo | IDENTITY PARENTESIS_ABIERTO num COMA num PARENTESIS_CERRADO;
+
+user_alter ::= ID | ID WITH set_item ;
+set_item ::= set_item1 set_item2 ;
+set_item2 ::= COMA set_item |  ;
+set_item1 ::=  NAME IGUAL ID | DEFAULT_SCHEMA IGUAL  ID | NULL | LOGIN IGUAL ID | PASSWORD IGUAL STRING ;
+
+
+execute ::= clause_exc obj_n num_list3 ;
+num_list3 ::= tipo_dato num_list2 | ARROBA ID num_list2 |  ;
+num_list2 ::= COMA num_list3 | ;
