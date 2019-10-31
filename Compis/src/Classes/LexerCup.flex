@@ -29,8 +29,9 @@ NULL {return new Symbol(sym.NULL, yycolumn, yyline, yytext());}
 "GO;" {return new Symbol(sym.PUNTO_COMA_GO, yycolumn, yyline, yytext());}  
 ";GO" {return new Symbol(sym.GO_PUNTO_COMA, yycolumn, yyline, yytext());}  
 "/*"[^*\/]* {return new Symbol(sym.COMENTARIO_M, yycolumn, yyline, yytext());}
-("0"|"1"|"NULL") {return new Symbol(sym.BIT, yycolumn, yyline, yytext());}
+("0"|"1") {return new Symbol(sym.BIT, yycolumn, yyline, yytext());}
 IN {return new Symbol(sym.IN, yycolumn, yyline, yytext());}
+IS {return new Symbol(sym.IS, yycolumn, yyline, yytext());}
 PROC {return new Symbol(sym.PROC, yycolumn, yyline, yytext());}
 "."{D}+(("E"|"e"|"E+"|"E-"|"e+"|"e-"){D}+)?  {return new Symbol(sym.ERROR_F, yycolumn, yyline, yytext());}
 {D}+"."{D}*(("E"|"e"|"E+"|"E-"|"e+"|"e-"){D}+)? {return new Symbol(sym.FLOAT, yycolumn, yyline, yytext());}

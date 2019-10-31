@@ -112,7 +112,7 @@ parser code
             list.add("\n");
         }
 
-        errors_list += "Line: " + (s.right + 1) + " and column: " + (s.left + 1) + ", '" + s.value +"', Non recuperable error: missing symbol " + list + "\n";
+        //errors_list += "Line: " + (s.right + 1) + " and column: " + (s.left + 1) + ", '" + s.value +"', Non recuperable error: missing symbol " + list + "\n";
         System.out.println("Error NR de sintaxis: "+ s.value +" Columna "+(s.left+1)+" linea "+(s.right+1)+"tokens esperados"+list+"\n\n" );   
     }
 
@@ -130,7 +130,7 @@ terminal BIT, INT, FLOAT, STRING, PALABRA_RESERVADA, ID, ERROR, ERROR_F, MAS, ME
     MAXSIZE, KB, MB, GB, TB, FILEGROWTH, PROCEDURE, FUNCTION, RETURN, RETURNS, EXEC, EXECUTE, EXECUTE_AS_CLAUSE, USE, SCHEMA, BEGIN, END, 
     TRAN, TRANSACTION, COMMIT, ROLLBACK, SAVE, DECLARE, VARYING, CURSOR, TO, RECOMPILE, ENCRYPTION, SELF, OWNER, CALLER, OUT, OUTPUT, READONLY, 
     REPLICATION, OFF, SCHEMABINDING, INLINE, CALLED, MARK, STATIC, FORWARD_ONLY, KEYSET, FAST_FORWARD, DYNAMIC, READ_ONLY, SCROLL_LOCKS, 
-    SCROLL, OPTIMISTIC, TYPE_WARNING, INPUT, LOCAL, GLOBAL, COLLATE , INMEDIATE, DELAYED_DURABILITY, INSENSITIVE, 
+    SCROLL, OPTIMISTIC, TYPE_WARNING, INPUT, LOCAL, GLOBAL, COLLATE , INMEDIATE, DELAYED_DURABILITY, INSENSITIVE, IS,
     ALLOW_ENCRYPTED_VALUE_MODIFICATIONS, GO_PUNTO_COMA, PUNTO_COMA_GO, PROC, NVARCHAR, VARIABLE ;
 
 
@@ -150,9 +150,10 @@ non terminal opciones_delete, delete1;
 
 non terminal list_table, list_tableA;
 
-non terminal drop_name, if_op, drop_table, drop_db, db_list, db_list1, drop_index, index_list, index_list1, drop_view, view_list, view_list1, drop_user;
+non terminal drop_name, if_op, drop_table, drop_db, db_list, db_list1, drop_index, index_list, index_list1, drop_view, view_list, view_list1, drop_user,
+    drop_proc_fun, name_drop_fsp;
 
-non terminal transaction, commit, rollback, savepoint, T2, T3, T4, T5, T6, T7, obj_nt, on_off, begin_tran, begin_tran2, end_tran ;
+non terminal transaction, commit, rollback, savepoint, T2, T3, T4, T5, T6, T7, on_off, begin_tran, begin_tran2, end_tran ;
 
 non terminal procedure, numSp, paramSP, tipoParam, tipo_out, paramSP1, paramSP2, paramSP3, sp_op, sp_op1, sp_op2, sp_op3, clause_exc, clause,
     replicationSP, startSP, startSP1, startSP2 ;
@@ -183,7 +184,7 @@ Stmt ::= select EndStmt general
         | delete EndStmt general
         | alter EndStmt general
         | create EndStmt general
-        | create_f_sp general
+        | create_f_sp EndStmt general
         | truncate EndStmt general
         | drop EndStmt general
         | cursor EndStmt general
@@ -200,7 +201,7 @@ Stmt2 ::= StmtDML
         | transaction end_tran 
         | execute EndStmt
         | USE obj_n EndStmt
-        | error EndStmt ;
+        | error EndStmt;
 
 StmtDML ::= select EndStmt
         | insert EndStmt
@@ -209,7 +210,7 @@ StmtDML ::= select EndStmt
 
 StmtDDL ::= alter EndStmt 
         | create EndStmt 
-        | create_f_sp
+        | create_f_sp EndStmt
         | truncate EndStmt 
         | drop EndStmt  ;
 
@@ -270,8 +271,8 @@ condicionales1 ::=  operadores_logicos otra_condicion |   ;
 otra_condicion ::=  obj_n operadores2 condicionales1 ;
 operadores_logicos ::=  AND | OR | AND_O | OR_O ;
 operadores2 ::= operadores tipo_retorno | operadores3 ;
-operadores ::=  MENOR | MAYOR | MENOR_O_IGUAL | MAYOR_O_IGUAL | DIFERENTE | IGUAL_A | IGUAL | LIKE | BETWEEN num AND num  ;
-operadores3 ::= IN PARENTESIS_ABIERTO num_list PARENTESIS_CERRADO ;
+operadores ::=  MENOR | MAYOR | MENOR_O_IGUAL | MAYOR_O_IGUAL | DIFERENTE | IGUAL_A | IGUAL | LIKE   ;
+operadores3 ::= IN PARENTESIS_ABIERTO num_list PARENTESIS_CERRADO | BETWEEN tipo_dato AND tipo_dato | IS NULL | IS NOT NULL ;
 num_list ::= tipo_dato num_list1 ;
 num_list1 ::= COMA num_list | ;
 
@@ -288,7 +289,7 @@ tipo_orden ::=  ASC | DESC |  ;
 orden_name ::= obj_n | funciones ;
 
 drop ::= DROP drop_name ;
-drop_name ::= drop_view | drop_table | drop_index | drop_db | drop_user ;
+drop_name ::= drop_view | drop_table | drop_index | drop_db | drop_user | drop_proc_fun ;
 
 if_op ::= IF EXISTS | ;
 
@@ -305,6 +306,9 @@ index_list1 ::= COMA index_list |  ;
 drop_view ::= VIEW if_op view_list ;
 view_list ::= obj_n view_list1 ;
 view_list1 ::= COMA view_list | ;
+
+drop_proc_fun ::= name_drop_fsp if_op db_list ;
+name_drop_fsp ::= proc | FUNCTION ;
 
 drop_user ::= USER if_op ID;
 
@@ -323,7 +327,7 @@ update ::= UPDATE opciones_update obj_n SET obj_n IGUAL asignaciones condicional
 
 asignaciones ::= asignaciones1 asignaciones2 ;
 asignaciones2 ::= COMA obj_n IGUAL asignaciones | ;
-asignaciones1 ::= STRING | aritmetica ;
+asignaciones1 ::= STRING | aritmetica | NULL ;
 
 opciones_update ::= TOP expresion porcentaje | ;
 
@@ -337,19 +341,19 @@ transaction ::= BEGIN T2 T6 T3 EndStmt begin_tran;
 T2 ::= TRAN | TRANSACTION ;
 T3 ::= WITH MARK T4 | ; 
 T4 ::= STRING |  ;
-begin_tran ::= Stmt2 begin_tran2 | savepoint begin_tran2 | ;
-begin_tran2 ::= begin_tran ;
-end_tran ::= commit EndStmt | rollback EndStmt ;
+begin_tran ::= Stmt2 begin_tran2 | savepoint begin_tran2;
+begin_tran2 ::= begin_tran |;
+end_tran ::= commit | rollback ;
 
-commit ::= COMMIT T5 T7 ;
+commit ::= COMMIT T5 T7 EndStmt ;
 T5 ::= T2 T6 |  ;
 T6 ::= obj_n | ARROBA ID | ;
 T7 ::= WITH PARENTESIS_ABIERTO DELAYED_DURABILITY IGUAL on_off PARENTESIS_CERRADO | ;
 on_off ::= ON | OFF ;
 
-rollback ::= ROLLBACK T2 T6 ;
+rollback ::= ROLLBACK T2 T6 EndStmt ;
 
-savepoint ::= SAVE T2 T6 ; 
+savepoint ::= SAVE T2 T6 EndStmt ; 
 
 proc ::= PROC | PROCEDURE ;
 procedure ::= proc obj_n numSp paramSP sp_op replicationSP startSP ;
@@ -362,10 +366,10 @@ paramSP2 ::= tipo_out | ;
 paramSP3 ::= COMA paramSP | ;  
 sp_op ::= WITH sp_op1 | ;
 sp_op1 ::=  sp_op2 sp_op3 ;
-sp_op2 ::=  ENCRYPTION | RECOMPILE | clause_exc AS clause ;
+sp_op2 ::=  ENCRYPTION | RECOMPILE | clause_exc AS clause;
 sp_op3 ::= COMA sp_op1 | ;
 clause_exc ::= EXEC | EXECUTE ;
-clause ::= SELF |  CALLER | OWNER | ID ;
+clause ::= SELF | CALLER | OWNER | ID | SCHEMABINDING  ;
 replicationSP ::= FOR REPLICATION | ;
 startSP ::=  AS BEGIN startSP1 END ; 
 startSP1 ::=  Stmt2 startSP2 ;
@@ -380,7 +384,7 @@ readonly ::= READONLY | ;
 with3 ::= WITH with1 | ;
 with1 ::=  fun_op with2 ; 
 with2 ::= COMA with1 |  ;
-fun_op ::= ENCRYPTION | SCHEMABINDING | EXECUTE_AS_CLAUSE | RETURNS NULL input | CALLED input | INLINE on_off ;
+fun_op ::= ENCRYPTION | SCHEMABINDING | clause_exc AS clause | RETURNS NULL input | CALLED input | INLINE on_off ;
 input ::= ON NULL INPUT ;
 stmtFun ::= BEGIN select EndStmt return END ;
 return ::= RETURN tipo_retorno | RETURN PARENTESIS_ABIERTO tipo_retorno PARENTESIS_CERRADO ;
